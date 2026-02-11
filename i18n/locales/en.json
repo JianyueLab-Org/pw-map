@@ -2,7 +2,7 @@
   "app": {
     "tagline": "Postal Wiki",
     "title": "Postal Wiki Maps",
-    "subtitle": "Browse posts and open the form only when you need to add one."
+    "subtitle": "Browse postboxs and click the button only when you need to add a new one."
   },
   "actions": {
     "newPost": "New Postbox",
@@ -22,9 +22,9 @@
   },
   "details": {
     "title": "Details",
-    "emptyTitle": "Select a marker to inspect",
-    "subtitle": "Snapshot of the selected postbox",
-    "emptySubtitle": "Click any marker to see the full entry.",
+    "emptyTitle": "Select a pin to check details",
+    "subtitle": "Abstract of the selected postbox",
+    "emptySubtitle": "Click any pin to see the full information.",
     "address": "Address",
     "description": "Description",
     "metadata": "Metadata",
@@ -39,7 +39,7 @@
     "emptyHint": "Click a marker on the map to inspect details for that post."
   },
   "form": {
-    "mapHint": "Click the map or type coordinates below.",
+    "mapHint": "Click the map or manually type coordinates below.",
     "name": "Name",
     "latitude": "Latitude",
     "longitude": "Longitude",
@@ -65,6 +65,6 @@
     "freestandingCylinder": "Freestanding cylinder",
     "freestandingRectangularPrism": "Freestanding rectangular prism",
     "undefined types": "Undefined types"
-    "noPhoto": "Photo is missing"
+    "noPhoto": "No photos yet"
   }
 }
