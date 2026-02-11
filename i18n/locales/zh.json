@@ -30,11 +30,11 @@
     "metadata": "元数据",
     "id": "ID",
     "zip": "邮编",
-    "pickupTime": "取件时间",
-    "station": "站点",
-    "stamp": "邮票",
+    "pickupTime": "开取时间",
+    "station": "开取部门",
+    "PostmarkText": "邮戳文字",
     "status": "状态",
-    "format": "形式",
+    "format": "样式",
     "emptyTitleShort": "未选择帖子",
     "emptyHint": "点击地图标记查看帖子详情。"
   },
@@ -47,11 +47,11 @@
     "description": "描述",
     "zip": "邮编",
     "email": "邮箱",
-    "pickupTime": "取件时间（可选）",
-    "station": "站点（可选）",
-    "stamp": "邮票（可选）",
+    "pickupTime": "开取时间（可选）",
+    "station": "开取部门（可选）",
+    "PostmarkText": "邮戳文字（可选）",
     "status": "状态（必选）",
-    "format": "形式（必选）"
+    "format": "样式（必选）"
   },
   "status": {
     "normal": "正常",
