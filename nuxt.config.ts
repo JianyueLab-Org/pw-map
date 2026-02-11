@@ -9,6 +9,7 @@ export default defineNuxtConfig({
   i18n: {
     strategy: "prefix",
     defaultLocale: "en",
+    // @ts-expect-error - nuxt-i18n supports lazy but typing omits it
     lazy: true,
     langDir: "locales",
     vueI18n: "./i18n.config.ts",

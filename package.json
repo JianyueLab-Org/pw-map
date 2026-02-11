@@ -7,7 +7,7 @@
     "dev": "nuxt dev",
     "generate": "nuxt generate",
     "preview": "nuxt preview",
-    "typecheck": "nuxt typecheck",
+    "typecheck": "bunx prisma generate && nuxt typecheck",
     "postinstall": "nuxt prepare",
     "start": "nuxt start"
   },
@@ -28,6 +28,7 @@
   },
   "devDependencies": {
     "@types/pg": "^8.16.0",
+    "@types/nodemailer": "^7.0.9",
     "dotenv": "^17.2.3",
     "prettier": "3.8.1",
     "prettier-plugin-prisma": "^5.0.0",

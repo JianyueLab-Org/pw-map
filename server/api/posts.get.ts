@@ -5,10 +5,27 @@ const parseCoordinate = (coordinate: string) => {
   return { lat, lon };
 };
 
+type PostRecord = {
+  id: number | string;
+  name: string;
+  coordinate: string;
+  address: string;
+  description: string;
+  user: string | null;
+  pickupTime: string | null;
+  station: string | null;
+  stamp: string | null;
+  zipcode: number | null;
+  status: number | null;
+  format: number | null;
+  createdAt: Date;
+  updatedAt: Date;
+};
+
 export default defineEventHandler(async () => {
-  const posts = await prisma.posts.findMany({
+  const posts = (await prisma.posts.findMany({
     orderBy: { createdAt: "desc" },
-  });
+  })) as PostRecord[];
 
   return posts.map((post) => {
     const { lat, lon } = parseCoordinate(post.coordinate);

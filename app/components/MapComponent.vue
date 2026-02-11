@@ -60,18 +60,20 @@ const center = ref<[number, number]>([51.505, -0.09]);
 
 // Calculate bounds to fit all markers
 // When there's a selection, don't use bounds so center takes over
-const bounds = computed(() => {
-  if (selectionMarker.value) return null;
-  if (convertedMarkers.value.length === 0) return null;
+const bounds = computed<[[number, number], [number, number]] | undefined>(
+  () => {
+    if (selectionMarker.value) return undefined;
+    if (convertedMarkers.value.length === 0) return undefined;
 
-  const lats = convertedMarkers.value.map((m) => m.lat);
-  const lons = convertedMarkers.value.map((m) => m.lon);
+    const lats = convertedMarkers.value.map((m) => m.lat);
+    const lons = convertedMarkers.value.map((m) => m.lon);
 
-  return [
-    [Math.min(...lats), Math.min(...lons)],
-    [Math.max(...lats), Math.max(...lons)],
-  ] as [[number, number], [number, number]];
-});
+    return [
+      [Math.min(...lats), Math.min(...lons)],
+      [Math.max(...lats), Math.max(...lons)],
+    ] as [[number, number], [number, number]];
+  },
+);
 
 // Convert coordinates if in China
 const convertedMarkers = computed(() => {
