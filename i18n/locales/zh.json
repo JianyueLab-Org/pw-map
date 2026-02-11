@@ -1,7 +1,7 @@
 {
   "app": {
-    "tagline": "Postal Wiki Maps",
-    "title": "Postal Wiki Maps",
+    "tagline": "Postal Wiki",
+    "title": "Postal Wiki 地图",
     "subtitle": "浏览邮筒（箱）的分布情况，需要新增时可点击按钮。"
   },
   "actions": {
@@ -29,7 +29,7 @@
     "description": "描述",
     "metadata": "元数据",
     "id": "ID",
-    "zip": "邮编",
+    "zip": "邮政编码",
     "pickupTime": "取件时间",
     "station": "站点",
     "stamp": "邮票",
@@ -45,7 +45,7 @@
     "longitude": "经度",
     "address": "地址",
     "description": "描述",
-    "zip": "邮编",
+    "zip": "邮政编码",
     "email": "电子邮箱",
     "pickupTime": "取件时间（可选）",
     "station": "站点（可选）",
@@ -64,7 +64,7 @@
     "wallMountedCube": "立方体挂墙式",
     "freestandingCylinder": "圆柱体落地式",
     "freestandingRectangularPrism": "长方体立地式",
-    "undefined type": "其他未指明的样式"
-    "noPhoto": "暂缺图片"
+    "undefined types": "其他未指明的样式"
+    "noPhoto": "图片暂缺"
   }
 }
