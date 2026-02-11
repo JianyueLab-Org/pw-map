@@ -14,6 +14,7 @@ This is a Nuxt 4 application called "Postal Wiki Map" - a mapping application fo
 ## Development Commands
 
 ### Running the Application
+
 ```bash
 bun dev          # Start development server
 bun build        # Build for production
@@ -22,6 +23,7 @@ bun preview      # Preview production build
 ```
 
 ### Database Operations
+
 ```bash
 # Prisma commands (use with prisma.config.ts)
 bunx prisma migrate dev   # Create and apply migrations
@@ -32,6 +34,7 @@ bunx prisma generate      # Generate Prisma Client (outputs to app/generated/pri
 ```
 
 ### Code Quality
+
 ```bash
 bunx prettier --write .   # Format code
 ```
@@ -39,6 +42,7 @@ bunx prettier --write .   # Format code
 ## Architecture
 
 ### Project Structure
+
 ```
 app/
 ├── app.vue           # Root component with VApp wrapper
@@ -53,7 +57,9 @@ prisma/
 ```
 
 ### Database Schema
+
 The application uses a single `Posts` model with location-related data:
+
 - **Coordinates**: Stored as string
 - **Core fields**: name, address, description, user, pickupTime, station
 - **Metadata**: stamp, zipcode (Int), status (Int), format (Int)
@@ -61,13 +67,16 @@ The application uses a single `Posts` model with location-related data:
 - **Table name**: Mapped to `posts` table in PostgreSQL
 
 ### Prisma Configuration
+
 - Schema path: `prisma/schema.prisma`
 - Client output: `app/generated/prisma` (non-standard location)
 - Datasource URL: Loaded from `DATABASE_URL` environment variable
 - Config file: `prisma.config.ts`
 
 ### Nuxt UI Customization
+
 The app uses custom Nuxt UI variants defined in `app/app.config.ts`:
+
 - **Primary color**: Red
 - **Custom card variants**: `authn-card`, `no-bg`
 - **Custom pageCard variants**: `no-bg`
