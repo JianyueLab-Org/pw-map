@@ -27,7 +27,7 @@
   },
   "devDependencies": {
     "@types/pg": "^8.16.0",
-    "dotenv": "^17.2.3",
+    "dotenv": "^17.2.4",
     "prettier": "3.8.1",
     "prettier-plugin-prisma": "^5.0.0",
     "prisma": "^7.3.0",
