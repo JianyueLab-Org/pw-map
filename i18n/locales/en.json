@@ -1,13 +1,13 @@
 {
   "app": {
     "tagline": "Postal Wiki",
-    "title": "Postal Wiki Map",
+    "title": "Postal Wiki Maps",
     "subtitle": "Browse posts and open the form only when you need to add one."
   },
   "actions": {
-    "newPost": "New Post",
-    "backToMap": "Back to map",
-    "clear": "Clear",
+    "newPost": "New Postbox",
+    "backToMap": "Back to the map",
+    "clear": "Close",
     "submit": "Submit",
     "submitting": "Submitting..."
   },
@@ -15,21 +15,21 @@
     "language": "Language"
   },
   "states": {
-    "loadingPosts": "Loading posts...",
-    "loadFailed": "Failed to load posts.",
-    "checkEmail": "Check your email for a verification link to publish the post.",
+    "loadingPosts": "Loading postboxes...",
+    "loadFailed": "Failed to load postboxes.",
+    "checkEmail": "Check your email for a verification link to publish your contribution.",
     "submitFailed": "Submission failed. Check the form fields."
   },
   "details": {
     "title": "Details",
     "emptyTitle": "Select a marker to inspect",
-    "subtitle": "Snapshot of the selected post",
+    "subtitle": "Snapshot of the selected postbox",
     "emptySubtitle": "Click any marker to see the full entry.",
     "address": "Address",
     "description": "Description",
     "metadata": "Metadata",
     "id": "ID",
-    "zip": "Zip",
+    "zip": "ZIP/Postal code",
     "pickupTime": "Pickup time",
     "station": "Station",
     "stamp": "Stamp",
@@ -45,7 +45,7 @@
     "longitude": "Longitude",
     "address": "Address",
     "description": "Description",
-    "zip": "Zip Code",
+    "zip": "ZIP/Postal Code",
     "email": "Email",
     "pickupTime": "Pickup Time (optional)",
     "station": "Station (optional)",
@@ -64,6 +64,7 @@
     "wallMountedCube": "Wall-mounted cube",
     "freestandingCylinder": "Freestanding cylinder",
     "freestandingRectangularPrism": "Freestanding rectangular prism",
-    "noPhoto": "No photo"
+    "undefined types": "Undefined types"
+    "noPhoto": "Photo is missing"
   }
 }
