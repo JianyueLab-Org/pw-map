@@ -27,6 +27,8 @@ const { refresh } = await useFetch("/api/posts", {
 const { t, locale, locales } = useI18n();
 const localePath = useLocalePath();
 const switchLocalePath = useSwitchLocalePath();
+const supportedLocales = ["en", "zh"] as const;
+type SupportedLocale = (typeof supportedLocales)[number];
 
 const localeOptions = computed(() =>
   (locales.value ?? []).map((entry) =>
@@ -35,8 +37,15 @@ const localeOptions = computed(() =>
 );
 
 const handleLocaleChange = (value: string) => {
-  const path = switchLocalePath(value);
+  if (!supportedLocales.includes(value as SupportedLocale)) return;
+  const path = switchLocalePath(value as SupportedLocale);
   if (path) navigateTo(path);
+};
+
+const handleLocaleChangeEvent = (event: Event) => {
+  const target = event.target as HTMLSelectElement | null;
+  if (!target) return;
+  handleLocaleChange(target.value);
 };
 
 const selectedCoordinates = computed(() => {
@@ -133,7 +142,7 @@ const submit = async () => {
             id="locale-switcher"
             :value="locale"
             class="rounded-full border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 transition hover:border-red-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500/30"
-            @change="handleLocaleChange($event.target.value)"
+            @change="handleLocaleChangeEvent"
           >
             <option
               v-for="option in localeOptions"

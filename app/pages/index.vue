@@ -1,9 +1,26 @@
 <script setup lang="ts">
+type Post = {
+  id: string | number;
+  name: string;
+  address: string;
+  description: string;
+  user: string | null;
+  pickupTime: string | null;
+  station: string | null;
+  stamp: string | null;
+  zipcode: number | null;
+  status: number | null;
+  format: number | null;
+  createdAt: string | Date;
+  lat: number;
+  lon: number;
+};
+
 const {
   data: posts,
   pending,
   error,
-} = await useFetch("/api/posts", {
+} = await useFetch<Post[]>("/api/posts", {
   server: false,
   lazy: true,
   timeout: 5000,
@@ -14,6 +31,8 @@ const {
 const { t, locale, locales } = useI18n();
 const localePath = useLocalePath();
 const switchLocalePath = useSwitchLocalePath();
+const supportedLocales = ["en", "zh"] as const;
+type SupportedLocale = (typeof supportedLocales)[number];
 
 const localeOptions = computed(() =>
   (locales.value ?? []).map((entry) =>
@@ -22,8 +41,15 @@ const localeOptions = computed(() =>
 );
 
 const handleLocaleChange = (value: string) => {
-  const path = switchLocalePath(value);
+  if (!supportedLocales.includes(value as SupportedLocale)) return;
+  const path = switchLocalePath(value as SupportedLocale);
   if (path) navigateTo(path);
+};
+
+const handleLocaleChangeEvent = (event: Event) => {
+  const target = event.target as HTMLSelectElement | null;
+  if (!target) return;
+  handleLocaleChange(target.value);
 };
 
 const markers = computed(() => {
@@ -132,7 +158,7 @@ const formatLabel = (value: unknown) => {
             id="locale-switcher"
             :value="locale"
             class="rounded-full border border-slate-700 bg-slate-900/70 px-3 py-2 text-xs font-semibold text-slate-100 transition hover:border-red-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500/30"
-            @change="handleLocaleChange($event.target.value)"
+            @change="handleLocaleChangeEvent"
           >
             <option
               v-for="option in localeOptions"
