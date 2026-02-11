@@ -1,34 +1,37 @@
 # Repository Guidelines
 
 ## Project Structure & Module Organization
-- `app/` contains the Nuxt 4 application: `pages/` for file-based routing, `components/`, `assets/`, and shared `utils/`.
-- `public/` holds static assets served as-is (e.g., `public/robots.txt`).
-- `prisma/` contains the database schema at `prisma/schema.prisma` and migrations.
-- Nuxt generates build artifacts in `.nuxt/` and Prisma client output lives in `app/generated/prisma`.
+- `app/` hosts the Nuxt 4 app. File-based routing lives in `app/pages/`, reusable UI in `app/components/`, styles in `app/assets/`, and shared helpers in `app/utils/`.
+- `server/` contains server-side code (API routes, middleware, and runtime utilities).
+- `public/` is for static assets served as-is (e.g., `public/robots.txt`).
+- `prisma/` holds the database schema (`prisma/schema.prisma`) and migrations. Prisma client output is generated to `app/generated/prisma`.
+- Nuxt build artifacts are written to `.nuxt/`.
 
 ## Build, Test, and Development Commands
 Use Bun as the package manager.
-- `bun dev` starts the Nuxt dev server.
-- `bun build` produces a production build.
-- `bun generate` creates a static site build.
-- `bun preview` serves the production build locally.
-- `bunx prisma migrate dev` runs database migrations (add `--name <name>` for named migrations).
-- `bunx prisma db push` syncs schema changes without migrations.
-- `bunx prisma studio` opens Prisma Studio.
-- `bunx prettier --write .` formats the codebase.
+- `bun dev`: start the Nuxt dev server with HMR.
+- `bun build`: create a production build.
+- `bun generate`: create a static site build (if applicable).
+- `bun preview`: serve the production build locally.
+- `bunx prisma migrate dev --name <name>`: run local migrations.
+- `bunx prisma db push`: sync schema changes without migrations.
+- `bunx prisma studio`: open Prisma Studio.
+- `bunx prettier --write .`: format the codebase.
 
 ## Coding Style & Naming Conventions
-- TypeScript + Vue 3 (Nuxt 4). Follow existing file-based routing and component naming in `app/`.
-- Formatting is handled by Prettier with `prettier-plugin-prisma`.
-- Use consistent, descriptive names for pages and components (e.g., `app/pages/map.vue`, `app/components/MapCard.vue`).
+- Language stack: TypeScript + Vue 3 (Nuxt 4). Follow Nuxt file-based routing and existing component patterns.
+- Indentation: 2 spaces for TS/Vue/CSS (enforced by Prettier).
+- Naming: descriptive, PascalCase components (e.g., `MapCard.vue`), route pages under `app/pages/` (e.g., `app/pages/map.vue`).
+- Prisma client imports must use: `import { PrismaClient } from "~/generated/prisma"`.
 
 ## Testing Guidelines
-- No dedicated test framework or test directories are present. If adding tests, document the chosen framework and add scripts to `package.json`.
+- No formal test framework is configured. If you add tests, document the framework and add scripts to `package.json`.
+- Keep test placement and naming consistent with the chosen framework (e.g., `*.spec.ts`).
 
 ## Commit & Pull Request Guidelines
-- Commit history suggests Conventional Commits (e.g., `feat: ...`). Follow this format for new commits.
-- PRs should include a clear summary, steps to verify, and screenshots for UI changes.
+- Commit messages follow Conventional Commits (e.g., `feat: add map filters`, `fix: handle null coords`).
+- PRs should include: a short summary, steps to verify, and screenshots for UI changes.
 
-## Configuration & Data
-- The database uses PostgreSQL via Prisma. Ensure `DATABASE_URL` is set in the environment.
-- Prisma Client imports should use the non-standard path: `import { PrismaClient } from "~/generated/prisma"`.
+## Configuration & Environment
+- PostgreSQL is required. Set `DATABASE_URL` in your environment before running Prisma commands.
+- Ensure generated Prisma artifacts are kept in `app/generated/prisma` and not moved.
