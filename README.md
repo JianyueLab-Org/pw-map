@@ -16,8 +16,8 @@ Pull the repo and use bun to manage this repo
 - Picture
 - Pickup Time
 - Responsible Department
-- Stamp
-- Zip code
+- Postmark Text (originally known as "stamp")
+- ZIP/Postal Code (orginally known as "Zip code")
 - Status
 - Applicant
 - Format
