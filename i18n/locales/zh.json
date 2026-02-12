@@ -32,12 +32,11 @@
     "zip": "邮编",
     "pickupTime": "开取时间",
     "station": "责任部门",
-    "PostmarkText": "邮戳文字",
     "status": "状态",
     "format": "样式",
     "emptyTitleShort": "未选择帖子",
     "emptyHint": "点击地图标记查看帖子详情。",
-    "stamp": "邮戳"
+    "stamp": "邮戳文字"
   },
   "form": {
     "mapHint": "点击地图或在下方输入坐标。",
@@ -50,7 +49,7 @@
     "email": "邮箱",
     "pickupTime": "开取时间（可选）",
     "station": "责任部门（可选）",
-    "PostmarkText": "邮戳文字（可选）",
+    "stamp": "邮戳文字（可选）",
     "status": "状态（必选）",
     "format": "样式（必选）"
   },

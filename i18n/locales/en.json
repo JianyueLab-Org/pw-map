@@ -32,12 +32,11 @@
     "zip": "ZIP/Postal Code",
     "pickupTime": "Pickup time",
     "station": "Station",
-    "PostmarkText": "Postmark Text",
+    "stamp": "Postmark Text",
     "status": "Status",
     "format": "Format",
     "emptyTitleShort": "No post selected",
     "emptyHint": "Click a marker on the map to inspect details for that post.",
-    "stamp": "Stamp"
   },
   "form": {
     "mapHint": "Click the map or type coordinates below.",
@@ -50,7 +49,7 @@
     "email": "Email",
     "pickupTime": "Pickup Time (optional)",
     "station": "Station (optional)",
-    "PostmarkText": "Postmark Text (optional)",
+    "stamp": "Postmark Text (optional)",
     "status": "Status (required)",
     "format": "Format (required)"
   },
