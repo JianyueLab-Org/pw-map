@@ -21,11 +21,12 @@ jobs:
       - name: Install dependencies
         run: bun install --frozen-lockfile
 
+      - name: Format wirte
+        run: bunx prettier --write .
+
       - name: Format check
         run: bunx prettier --check .
 
-      - name: Format wirte
-        run: bunx prettier --write .
 
       - name: Typecheck
         run: bun run typecheck
