@@ -29,7 +29,24 @@ jobs:
       - name: Trigger Dokploy Webhook
         id: dokploy
         run: |
+          PAYLOAD=$(
+            cat <<'JSON'
+          {
+            "ref": "refs/heads/${{ github.event.workflow_run.head_branch }}",
+            "after": "${{ github.event.workflow_run.head_sha }}",
+            "repository": {
+              "full_name": "${{ github.repository }}"
+            },
+            "sender": {
+              "login": "${{ github.actor }}"
+            }
+          }
+          JSON
+          )
+
           RESPONSE=$(curl -X POST "${{ secrets.DOKPLOY_WEBHOOK_URL }}" \
+            -H "Content-Type: application/json" \
+            -d "$PAYLOAD" \
             -w "\n%{http_code}" \
             -s)
           HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
