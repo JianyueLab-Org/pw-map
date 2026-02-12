@@ -25,6 +25,7 @@ export default defineNuxtConfig({
     },
   },
   vite: {
-    plugins: [tailwindcss()],
+    // Cast to any to avoid mismatched Vite type versions between Nuxt and Tailwind.
+    plugins: [tailwindcss() as any],
   },
 });

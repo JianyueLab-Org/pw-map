@@ -36,7 +36,7 @@
     "status": "Status",
     "format": "Format",
     "emptyTitleShort": "No post selected",
-    "emptyHint": "Click a marker on the map to inspect details for that post.",
+    "emptyHint": "Click a marker on the map to inspect details for that post."
   },
   "form": {
     "mapHint": "Click the map or type coordinates below.",

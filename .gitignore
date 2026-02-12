@@ -25,3 +25,5 @@ logs
 
 app/generated/prisma
 prisma/generated
+
+bun.lock
