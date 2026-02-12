@@ -2,12 +2,12 @@
   "app": {
     "tagline": "邮政维基",
     "title": "邮政维基地图",
-    "subtitle": "浏览帖子，需要添加时再打开表单。"
+    "subtitle": "浏览邮筒（箱）的分布情况，需要添加时再打开表单。"
   },
   "actions": {
-    "newPost": "添加邮筒",
+    "newPost": "添加邮筒（箱）",
     "backToMap": "返回地图",
-    "clear": "清除",
+    "clear": "关闭",
     "submit": "提交",
     "submitting": "提交中..."
   },
@@ -15,15 +15,15 @@
     "language": "语言"
   },
   "states": {
-    "loadingPosts": "正在加载帖子...",
-    "loadFailed": "加载帖子失败。",
-    "checkEmail": "请查收邮件并点击验证链接以发布帖子。",
+    "loadingPosts": "正在加载邮筒（箱）...",
+    "loadFailed": "加载邮筒（箱）失败。",
+    "checkEmail": "请查收电子邮件并点击验证链接以发布邮筒（箱）。",
     "submitFailed": "提交失败。请检查表单字段。"
   },
   "details": {
     "title": "详情",
-    "emptyTitle": "请选择一个标记查看",
-    "subtitle": "所选帖子的摘要",
+    "emptyTitle": "请选择一个标记点查看",
+    "subtitle": "所选邮筒（箱）的摘要",
     "emptySubtitle": "点击任意标记查看完整信息。",
     "address": "地址",
     "description": "描述",
@@ -34,19 +34,19 @@
     "station": "责任部门",
     "status": "状态",
     "format": "样式",
-    "emptyTitleShort": "未选择帖子",
-    "emptyHint": "点击地图标记查看帖子详情。",
+    "emptyTitleShort": "未选择邮筒（箱）",
+    "emptyHint": "点击地图标记点以查看邮筒（箱）详情。",
     "stamp": "邮戳文字"
   },
   "form": {
-    "mapHint": "点击地图或在下方输入坐标。",
+    "mapHint": "点击地图或在下方手动输入坐标。",
     "name": "名称",
     "latitude": "纬度",
     "longitude": "经度",
     "address": "地址",
     "description": "描述",
-    "zip": "邮编",
-    "email": "邮箱",
+    "zip": "邮政编码",
+    "email": "电子邮箱",
     "pickupTime": "开取时间（可选）",
     "station": "责任部门（可选）",
     "stamp": "邮戳文字（可选）",
@@ -64,6 +64,6 @@
     "wallMountedCube": "立方体挂墙式",
     "freestandingCylinder": "圆柱体落地式",
     "freestandingRectangularPrism": "长方体立地式",
-    "noPhoto": "暂无图片"
+    "noPhoto": "图片暂缺"
   }
 }
