@@ -146,7 +146,7 @@ const formatLabel = (value: unknown) => {
           <h1 class="mt-2 text-2xl font-semibold text-slate-50">
             {{ $t("app.title") }}
           </h1>
-          <p class="mt-1 text-sm text-slate-300">
+          <p class="mt-1 text-sm text-slate-300 hidden sm:block">
             {{ $t("app.subtitle") }}
           </p>
         </div>
@@ -208,7 +208,7 @@ const formatLabel = (value: unknown) => {
         </div>
 
         <aside
-          class="flex h-[70vh] flex-col rounded-[20px] border border-slate-800 bg-slate-950/70 p-5 shadow-[0_30px_80px_rgba(15,23,42,0.45)]"
+          class="flex flex-col rounded-[20px] border border-slate-800 bg-slate-950/70 p-5 shadow-[0_30px_80px_rgba(15,23,42,0.45)]"
         >
           <div class="flex items-start justify-between gap-3">
             <div>
