@@ -1,8 +1,9 @@
 <script setup lang="ts">
 type Post = {
   id: string | number;
+  type?: string | null;
   name: string;
-  address: string;
+  address: string | null;
   description: string;
   user: string | null;
   pickupTime: string | null;
@@ -11,6 +12,8 @@ type Post = {
   zipcode: number | null;
   status: number | null;
   format: number | null;
+  pictures?: string[] | null;
+  lastConfirmedAt?: string | Date | null;
   createdAt: string | Date;
   lat: number;
   lon: number;
@@ -52,26 +55,43 @@ const handleLocaleChangeEvent = (event: Event) => {
   handleLocaleChange(target.value);
 };
 
-const markers = computed(() => {
+const normalizeType = (value: unknown) =>
+  value === "kiosk" ? "kiosk" : "mailbox";
+
+const showMailbox = ref(true);
+const showKiosk = ref(true);
+
+const filteredPosts = computed(() => {
   if (!posts.value) return [];
-  return posts.value
-    .filter((post) => Number.isFinite(post.lat) && Number.isFinite(post.lon))
-    .map((post) => ({
-      id: String(post.id),
-      name: post.name,
-      lat: post.lat,
-      lon: post.lon,
-      address: post.address,
-      description: post.description,
-      user: post.user,
-      pickupTime: post.pickupTime,
-      station: post.station,
-      stamp: post.stamp,
-      zipcode: post.zipcode,
-      status: post.status,
-      format: post.format,
-      createdAt: post.createdAt,
-    }));
+  return posts.value.filter((post) => {
+    if (!Number.isFinite(post.lat) || !Number.isFinite(post.lon)) return false;
+    const type = normalizeType(post.type);
+    if (type === "mailbox" && !showMailbox.value) return false;
+    if (type === "kiosk" && !showKiosk.value) return false;
+    return true;
+  });
+});
+
+const markers = computed(() => {
+  return filteredPosts.value.map((post) => ({
+    id: String(post.id),
+    name: post.name,
+    lat: post.lat,
+    lon: post.lon,
+    address: post.address,
+    description: post.description,
+    user: post.user,
+    pickupTime: post.pickupTime,
+    station: post.station,
+    stamp: post.stamp,
+    zipcode: post.zipcode,
+    status: post.status,
+    format: post.format,
+    type: normalizeType(post.type),
+    pictures: post.pictures ?? [],
+    lastConfirmedAt: post.lastConfirmedAt ?? null,
+    createdAt: post.createdAt,
+  }));
 });
 
 const selectedPostId = ref<string | null>(null);
@@ -82,6 +102,10 @@ const selectedPost = computed(() => {
     posts.value.find((post) => String(post.id) === selectedPostId.value) ?? null
   );
 });
+
+const selectedIsKiosk = computed(
+  () => normalizeType(selectedPost.value?.type) === "kiosk",
+);
 
 const handleMarkerSelect = (marker: { id: string }) => {
   selectedPostId.value = marker.id;
@@ -107,6 +131,9 @@ const formatOptional = (value: unknown) => {
   return trimmed === "" ? "" : trimmed;
 };
 
+const typeLabel = (value: unknown) =>
+  value === "kiosk" ? t("types.kiosk") : t("types.mailbox");
+
 const statusLabel = (value: unknown) => {
   const numeric = Number(value);
   if (!Number.isFinite(numeric)) return "";
@@ -131,6 +158,18 @@ const formatLabel = (value: unknown) => {
   ];
   return labels[numeric] ?? "";
 };
+
+watch(
+  markers,
+  (next) => {
+    if (!selectedPostId.value) return;
+    const stillVisible = next.some(
+      (marker) => marker.id === selectedPostId.value,
+    );
+    if (!stillVisible) selectedPostId.value = null;
+  },
+  { immediate: true },
+);
 </script>
 
 <template>
@@ -177,11 +216,39 @@ const formatLabel = (value: unknown) => {
         </div>
       </header>
 
+      <div class="flex flex-wrap items-center gap-3 text-xs text-slate-300">
+        <span
+          class="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-400"
+        >
+          {{ $t("ui.filters") }}
+        </span>
+        <label
+          class="flex items-center gap-2 rounded-full border border-slate-800 bg-slate-900/60 px-3 py-1.5 text-xs font-semibold text-slate-200"
+        >
+          <input
+            v-model="showMailbox"
+            type="checkbox"
+            class="h-3.5 w-3.5 text-red-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500/30"
+          />
+          {{ $t("types.mailbox") }}
+        </label>
+        <label
+          class="flex items-center gap-2 rounded-full border border-slate-800 bg-slate-900/60 px-3 py-1.5 text-xs font-semibold text-slate-200"
+        >
+          <input
+            v-model="showKiosk"
+            type="checkbox"
+            class="h-3.5 w-3.5 text-red-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500/30"
+          />
+          {{ $t("types.kiosk") }}
+        </label>
+      </div>
+
       <section
-        class="grid gap-6 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.7fr)]"
+        class="grid gap-6 lg:grid-cols-[minmax(0,1.25fr)_minmax(0,0.75fr)]"
       >
         <div
-          class="relative h-[70vh] overflow-hidden rounded-[20px] border border-slate-800 bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 shadow-[0_30px_80px_rgba(15,23,42,0.6)]"
+          class="relative h-[80vh] overflow-hidden rounded-[20px] border border-slate-800 bg-linear-to-br from-slate-950 via-slate-900 to-slate-950 shadow-[0_30px_80px_rgba(15,23,42,0.6)]"
         >
           <ClientOnly>
             <MapComponent
@@ -244,16 +311,30 @@ const formatLabel = (value: unknown) => {
             v-if="selectedPost"
             class="mt-5 flex flex-1 flex-col gap-4 overflow-hidden"
           >
-            <div class="rounded-2xl bg-slate-900/60 p-4">
+            <div
+              v-if="!selectedIsKiosk"
+              class="rounded-2xl bg-slate-900/60 p-4"
+            >
               <p
                 class="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400"
               >
                 {{ $t("details.address") }}
               </p>
               <p class="mt-2 text-sm text-slate-100">
-                {{ selectedPost.address }}
+                {{ selectedPost.address || "—" }}
               </p>
               <p class="mt-1 text-xs text-slate-400">
+                {{ selectedPost.lat.toFixed(5) }},
+                {{ selectedPost.lon.toFixed(5) }}
+              </p>
+            </div>
+            <div v-else class="rounded-2xl bg-slate-900/60 p-4">
+              <p
+                class="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400"
+              >
+                {{ $t("details.coordinates") }}
+              </p>
+              <p class="mt-2 text-sm text-slate-100">
                 {{ selectedPost.lat.toFixed(5) }},
                 {{ selectedPost.lon.toFixed(5) }}
               </p>
@@ -289,10 +370,28 @@ const formatLabel = (value: unknown) => {
                   <span>{{ selectedPost.id }}</span>
                 </div>
                 <div class="flex items-center justify-between gap-3">
+                  <span class="text-slate-400">{{ $t("details.type") }}</span>
+                  <span>{{ typeLabel(selectedPost.type) }}</span>
+                </div>
+                <div class="flex items-center justify-between gap-3">
+                  <span class="text-slate-400">{{
+                    $t("details.lastConfirmed")
+                  }}</span>
+                  <span>{{
+                    formatDateTime(selectedPost.lastConfirmedAt) || "—"
+                  }}</span>
+                </div>
+                <div
+                  v-if="!selectedIsKiosk"
+                  class="flex items-center justify-between gap-3"
+                >
                   <span class="text-slate-400">{{ $t("details.zip") }}</span>
                   <span>{{ selectedPost.zipcode }}</span>
                 </div>
-                <div class="flex items-center justify-between gap-3">
+                <div
+                  v-if="!selectedIsKiosk"
+                  class="flex items-center justify-between gap-3"
+                >
                   <span class="text-slate-400">{{
                     $t("details.pickupTime")
                   }}</span>
@@ -300,13 +399,19 @@ const formatLabel = (value: unknown) => {
                     formatOptional(selectedPost.pickupTime) || "—"
                   }}</span>
                 </div>
-                <div class="flex items-center justify-between gap-3">
+                <div
+                  v-if="!selectedIsKiosk"
+                  class="flex items-center justify-between gap-3"
+                >
                   <span class="text-slate-400">{{
                     $t("details.station")
                   }}</span>
                   <span>{{ formatOptional(selectedPost.station) || "—" }}</span>
                 </div>
-                <div class="flex items-center justify-between gap-3">
+                <div
+                  v-if="!selectedIsKiosk"
+                  class="flex items-center justify-between gap-3"
+                >
                   <span class="text-slate-400">{{ $t("details.stamp") }}</span>
                   <span>{{ formatOptional(selectedPost.stamp) || "—" }}</span>
                 </div>
@@ -314,11 +419,40 @@ const formatLabel = (value: unknown) => {
                   <span class="text-slate-400">{{ $t("details.status") }}</span>
                   <span>{{ statusLabel(selectedPost.status) || "—" }}</span>
                 </div>
-                <div class="flex items-center justify-between gap-3">
+                <div
+                  v-if="!selectedIsKiosk"
+                  class="flex items-center justify-between gap-3"
+                >
                   <span class="text-slate-400">{{ $t("details.format") }}</span>
                   <span>{{ formatLabel(selectedPost.format) || "—" }}</span>
                 </div>
               </div>
+            </div>
+
+            <div
+              v-if="selectedPost.pictures && selectedPost.pictures.length"
+              class="rounded-2xl bg-slate-900/60 p-4"
+            >
+              <p
+                class="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400"
+              >
+                {{ $t("details.pictures") }}
+              </p>
+              <ul class="mt-2 grid gap-2 text-sm text-slate-200">
+                <li
+                  v-for="(picture, index) in selectedPost.pictures"
+                  :key="`${picture}-${index}`"
+                >
+                  <a
+                    :href="picture"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="break-all text-red-200 hover:text-red-100"
+                  >
+                    {{ picture }}
+                  </a>
+                </li>
+              </ul>
             </div>
           </div>
 

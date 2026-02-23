@@ -1,5 +1,6 @@
 <script setup lang="ts">
 const form = reactive({
+  type: "mailbox",
   name: "",
   lat: "",
   lon: "",
@@ -12,6 +13,7 @@ const form = reactive({
   zipcode: "",
   status: "0",
   format: "0",
+  pictures: "",
 });
 
 const submissionState = ref<"idle" | "submitting" | "success" | "error">(
@@ -55,6 +57,21 @@ const selectedCoordinates = computed(() => {
   return { lat, lon };
 });
 
+const isKiosk = computed(() => form.type === "kiosk");
+
+watch(isKiosk, (next) => {
+  if (next) {
+    form.address = "";
+    form.pickupTime = "";
+    form.station = "";
+    form.stamp = "";
+    form.zipcode = "";
+    form.format = "0";
+  } else {
+    form.pictures = "";
+  }
+});
+
 const handleMapSelect = ({ lat, lon }: { lat: number; lon: number }) => {
   form.lat = lat.toFixed(6);
   form.lon = lon.toFixed(6);
@@ -68,12 +85,20 @@ const submit = async () => {
     await $fetch("/api/posts", {
       method: "POST",
       body: {
-        ...form,
+        type: form.type,
+        name: form.name,
         lat: Number(form.lat),
         lon: Number(form.lon),
-        zipcode: Number(form.zipcode),
+        address: isKiosk.value ? null : form.address,
+        description: form.description,
+        email: form.email,
+        pickupTime: isKiosk.value ? null : form.pickupTime,
+        station: isKiosk.value ? null : form.station,
+        stamp: isKiosk.value ? null : form.stamp,
+        zipcode: isKiosk.value ? null : Number(form.zipcode),
         status: Number(form.status),
-        format: Number(form.format),
+        format: isKiosk.value ? null : Number(form.format),
+        pictures: isKiosk.value ? form.pictures : "",
       },
     });
 
@@ -81,6 +106,7 @@ const submit = async () => {
     submissionMessage.value = t("states.checkEmail");
 
     Object.assign(form, {
+      type: "mailbox",
       name: "",
       lat: "",
       lon: "",
@@ -93,6 +119,7 @@ const submit = async () => {
       zipcode: "",
       status: "0",
       format: "0",
+      pictures: "",
     });
 
     await refresh();
@@ -162,6 +189,33 @@ const submit = async () => {
       </div>
 
       <form class="flex flex-col gap-3" @submit.prevent="submit">
+        <fieldset class="flex flex-col gap-2">
+          <legend class="text-sm font-semibold text-slate-700">
+            {{ $t("form.type") }}
+          </legend>
+          <div class="flex flex-wrap gap-3">
+            <label class="flex items-center gap-2 text-sm text-slate-700">
+              <input
+                v-model="form.type"
+                type="radio"
+                name="type"
+                value="mailbox"
+                class="h-4 w-4 text-red-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500/30"
+              />
+              {{ $t("types.mailbox") }}
+            </label>
+            <label class="flex items-center gap-2 text-sm text-slate-700">
+              <input
+                v-model="form.type"
+                type="radio"
+                name="type"
+                value="kiosk"
+                class="h-4 w-4 text-red-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500/30"
+              />
+              {{ $t("types.kiosk") }}
+            </label>
+          </div>
+        </fieldset>
         <label class="flex flex-col gap-1.5 text-sm text-slate-700">
           {{ $t("form.name") }}
           <input
@@ -191,7 +245,10 @@ const submit = async () => {
             class="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus-visible:border-red-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500/30"
           />
         </label>
-        <label class="flex flex-col gap-1.5 text-sm text-slate-700">
+        <label
+          v-if="!isKiosk"
+          class="flex flex-col gap-1.5 text-sm text-slate-700"
+        >
           {{ $t("form.address") }}
           <input
             v-model="form.address"
@@ -209,7 +266,10 @@ const submit = async () => {
             class="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus-visible:border-red-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500/30"
           />
         </label>
-        <label class="flex flex-col gap-1.5 text-sm text-slate-700">
+        <label
+          v-if="!isKiosk"
+          class="flex flex-col gap-1.5 text-sm text-slate-700"
+        >
           {{ $t("form.zip") }}
           <input
             v-model="form.zipcode"
@@ -227,7 +287,10 @@ const submit = async () => {
             class="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus-visible:border-red-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500/30"
           />
         </label>
-        <label class="flex flex-col gap-1.5 text-sm text-slate-700">
+        <label
+          v-if="!isKiosk"
+          class="flex flex-col gap-1.5 text-sm text-slate-700"
+        >
           {{ $t("form.pickupTime") }}
           <input
             v-model="form.pickupTime"
@@ -235,7 +298,10 @@ const submit = async () => {
             class="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus-visible:border-red-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500/30"
           />
         </label>
-        <label class="flex flex-col gap-1.5 text-sm text-slate-700">
+        <label
+          v-if="!isKiosk"
+          class="flex flex-col gap-1.5 text-sm text-slate-700"
+        >
           {{ $t("form.station") }}
           <input
             v-model="form.station"
@@ -243,7 +309,10 @@ const submit = async () => {
             class="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus-visible:border-red-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500/30"
           />
         </label>
-        <label class="flex flex-col gap-1.5 text-sm text-slate-700">
+        <label
+          v-if="!isKiosk"
+          class="flex flex-col gap-1.5 text-sm text-slate-700"
+        >
           {{ $t("form.stamp") }}
           <input
             v-model="form.stamp"
@@ -311,6 +380,7 @@ const submit = async () => {
         </fieldset>
 
         <fieldset
+          v-if="!isKiosk"
           class="flex flex-col gap-2 rounded-xl border border-slate-200 bg-slate-50 p-3"
         >
           <legend class="px-1 text-sm font-semibold text-slate-700">
@@ -358,6 +428,22 @@ const submit = async () => {
             {{ $t("format.noPhoto") }}
           </label>
         </fieldset>
+        <label
+          v-if="isKiosk"
+          class="flex flex-col gap-1.5 text-sm text-slate-700"
+        >
+          {{ $t("form.pictures") }}
+          <textarea
+            v-model="form.pictures"
+            rows="3"
+            required
+            :placeholder="$t('form.picturesHint')"
+            class="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus-visible:border-red-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500/30"
+          />
+          <span class="text-xs text-slate-500">
+            {{ $t("form.picturesNote") }}
+          </span>
+        </label>
         <button
           type="submit"
           :disabled="submissionState === 'submitting'"

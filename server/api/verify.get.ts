@@ -25,6 +25,7 @@ export default defineEventHandler(async (event) => {
 
   await prisma.posts.create({
     data: {
+      type: pending.type,
       name: pending.name,
       coordinate: pending.coordinate,
       address: pending.address,
@@ -36,6 +37,8 @@ export default defineEventHandler(async (event) => {
       zipcode: pending.zipcode,
       status: pending.status,
       format: pending.format,
+      pictures: pending.pictures,
+      lastConfirmedAt: pending.pictures.length > 0 ? new Date() : null,
     },
   });
 

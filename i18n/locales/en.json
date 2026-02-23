@@ -2,44 +2,50 @@
   "app": {
     "tagline": "Postal Wiki",
     "title": "Postal Wiki Maps",
-    "subtitle": "Browse the distribution of postboxs and click the button only when you need to add a new one."
+    "subtitle": "Browse the distribution of postboxes and kiosks. Add a new entry only when you need it."
   },
   "actions": {
-    "newPost": "New Postbox",
+    "newPost": "New Postbox / Kiosk",
     "backToMap": "Back to the map",
     "clear": "Close",
     "submit": "Submit",
     "submitting": "Submitting..."
   },
   "ui": {
-    "language": "Language"
+    "language": "Language",
+    "filters": "Filters"
   },
   "states": {
-    "loadingPosts": "Loading postboxs...",
-    "loadFailed": "Failed to load postboxs.",
-    "checkEmail": "Check your email for a verification link to publish the form.",
+    "loadingPosts": "Loading postboxes & kiosks...",
+    "loadFailed": "Failed to load postboxes & kiosks.",
+    "checkEmail": "Check your email for a verification link to publish the entry.",
     "submitFailed": "Submission failed. Check the form fields."
   },
   "details": {
     "title": "Details",
     "emptyTitle": "Select a pin to inspect",
-    "subtitle": "Abstract of the selected postbox",
+    "subtitle": "Abstract of the selected entry",
     "emptySubtitle": "Click any pin to see the full entry.",
     "address": "Address",
+    "coordinates": "Coordinates",
     "description": "Description",
     "metadata": "Metadata",
     "id": "ID",
+    "type": "Type",
     "zip": "ZIP/Postal Code",
     "pickupTime": "Pickup time",
     "station": "Station",
     "stamp": "Postmark Text",
     "status": "Status",
     "format": "Format",
-    "emptyTitleShort": "No postbox selected",
-    "emptyHint": "Click a marker on the map to inspect details for the postbox."
+    "lastConfirmed": "Last confirmed on",
+    "pictures": "Pictures",
+    "emptyTitleShort": "No entry selected",
+    "emptyHint": "Click a marker on the map to inspect details."
   },
   "form": {
     "mapHint": "Click the map or manually type coordinates below.",
+    "type": "Type",
     "name": "Name",
     "latitude": "Latitude",
     "longitude": "Longitude",
@@ -51,7 +57,14 @@
     "station": "Station (optional)",
     "stamp": "Postmark Text (optional)",
     "status": "Status (required)",
-    "format": "Format (required)"
+    "format": "Format (required)",
+    "pictures": "Pictures (required for kiosk)",
+    "picturesHint": "One image URL per line",
+    "picturesNote": "Pictures determine the last confirmed date."
+  },
+  "types": {
+    "mailbox": "Postbox",
+    "kiosk": "Newsstand kiosk"
   },
   "status": {
     "normal": "Normal",

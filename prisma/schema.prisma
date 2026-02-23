@@ -14,37 +14,42 @@ datasource db {
 }
 
 model Posts {
-  id          Int      @id @default(autoincrement()) // ID
-  name        String // Post Name
-  coordinate  String // Coordinate of the post
-  address     String // Address of the post
-  description String // Description of the post
-  user        String // User who created the post
-  pickupTime  String // Pickup time of the post
-  station     String // Station where the post is located
-  stamp       String // Stamp of the post
-  zipcode     Int // Zipcode of the post
-  status      Int // Status of the post
-  format      Int // Format of the post
-  createdAt   DateTime @default(now()) // Date and time when the post was created
-  updatedAt   DateTime @updatedAt // Date and time when the post was last updated
+  id              Int       @id @default(autoincrement()) // ID
+  type            String    @default("mailbox") // mailbox | kiosk
+  name            String // Post Name
+  coordinate      String // Coordinate of the post
+  address         String? // Address of the post
+  description     String // Description of the post
+  user            String // User who created the post
+  pickupTime      String? // Pickup time of the post
+  station         String? // Station where the post is located
+  stamp           String? // Stamp of the post
+  zipcode         Int? // Zipcode of the post
+  status          Int // Status of the post
+  format          Int? // Format of the post
+  pictures        String[]  @default([])
+  lastConfirmedAt DateTime?
+  createdAt       DateTime  @default(now()) // Date and time when the post was created
+  updatedAt       DateTime  @updatedAt // Date and time when the post was last updated
 
   @@map("posts")
 }
 
 model PendingPosts {
   id                Int      @id @default(autoincrement())
+  type              String   @default("mailbox")
   name              String
   coordinate        String
-  address           String
+  address           String?
   description       String
   user              String
-  pickupTime        String
-  station           String
-  stamp             String
-  zipcode           Int
+  pickupTime        String?
+  station           String?
+  stamp             String?
+  zipcode           Int?
   status            Int
-  format            Int
+  format            Int?
+  pictures          String[] @default([])
   verificationToken String   @unique
   expiresAt         DateTime
   createdAt         DateTime @default(now())

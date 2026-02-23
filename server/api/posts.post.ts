@@ -2,9 +2,12 @@ import { randomUUID } from "node:crypto";
 import { gcj02ToWgs84 } from "~~/server/utils/coordinateConverter";
 import { sendVerificationEmail } from "~~/server/utils/email";
 
+const toRequiredString = (value: unknown) => String(value ?? "").trim();
+
 const toOptionalString = (value: unknown) => {
-  if (value === null || value === undefined) return "";
-  return String(value).trim();
+  if (value === null || value === undefined) return null;
+  const trimmed = String(value).trim();
+  return trimmed === "" ? null : trimmed;
 };
 
 const isValidEmail = (value: string) =>
@@ -13,10 +16,11 @@ const isValidEmail = (value: string) =>
 export default defineEventHandler(async (event) => {
   const body = await readBody(event);
 
-  const name = toOptionalString(body?.name);
+  const type = body?.type === "kiosk" ? "kiosk" : "mailbox";
+  const name = toRequiredString(body?.name);
   const address = toOptionalString(body?.address);
-  const description = toOptionalString(body?.description);
-  const email = toOptionalString(body?.email);
+  const description = toRequiredString(body?.description);
+  const email = toRequiredString(body?.email);
   const user = email || "anonymous";
   const pickupTime = toOptionalString(body?.pickupTime);
   const station = toOptionalString(body?.station);
@@ -24,18 +28,37 @@ export default defineEventHandler(async (event) => {
 
   const lat = Number(body?.lat);
   const lon = Number(body?.lon);
-  const zipcode = Number(body?.zipcode);
+  const zipcodeRaw = body?.zipcode;
+  const zipcode =
+    zipcodeRaw === null || zipcodeRaw === undefined ? null : Number(zipcodeRaw);
   const status = Number.isFinite(Number(body?.status))
     ? Number(body?.status)
     : 0;
-  const format = Number.isFinite(Number(body?.format))
-    ? Number(body?.format)
-    : 0;
+  const formatRaw = body?.format;
+  const format =
+    formatRaw === null || formatRaw === undefined ? null : Number(formatRaw);
 
-  if (!name || !address || !description) {
+  const normalizePictures = (value: unknown) => {
+    if (Array.isArray(value)) {
+      return value
+        .map((entry) => String(entry ?? "").trim())
+        .filter((entry) => entry !== "");
+    }
+    if (typeof value === "string") {
+      return value
+        .split(/\r?\n/)
+        .map((entry) => entry.trim())
+        .filter((entry) => entry !== "");
+    }
+    return [] as string[];
+  };
+
+  const pictures = normalizePictures(body?.pictures);
+
+  if (!name || !description) {
     throw createError({
       statusCode: 400,
-      statusMessage: "name, address, and description are required",
+      statusMessage: "name and description are required",
     });
   }
 
@@ -53,10 +76,31 @@ export default defineEventHandler(async (event) => {
     });
   }
 
-  if (!Number.isFinite(zipcode)) {
+  if (type === "mailbox") {
+    if (!address) {
+      throw createError({
+        statusCode: 400,
+        statusMessage: "address is required for mailbox",
+      });
+    }
+
+    if (!Number.isFinite(zipcode)) {
+      throw createError({
+        statusCode: 400,
+        statusMessage: "zipcode must be a valid number",
+      });
+    }
+
+    if (!Number.isFinite(Number(format))) {
+      throw createError({
+        statusCode: 400,
+        statusMessage: "format must be a valid number",
+      });
+    }
+  } else if (pictures.length === 0) {
     throw createError({
       statusCode: 400,
-      statusMessage: "zipcode must be a valid number",
+      statusMessage: "pictures are required for kiosk",
     });
   }
 
@@ -67,6 +111,7 @@ export default defineEventHandler(async (event) => {
 
   await prisma.pendingPosts.create({
     data: {
+      type,
       name,
       coordinate: `${normalizedLat},${normalizedLon}`,
       address,
@@ -78,6 +123,7 @@ export default defineEventHandler(async (event) => {
       zipcode,
       status,
       format,
+      pictures,
       verificationToken,
       expiresAt,
     },

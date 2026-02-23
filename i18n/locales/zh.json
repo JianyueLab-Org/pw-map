@@ -2,44 +2,50 @@
   "app": {
     "tagline": "邮政维基",
     "title": "邮政维基地图",
-    "subtitle": "浏览邮筒（箱）的分布情况，需要添加时再打开表单。"
+    "subtitle": "浏览邮筒（箱）与报刊亭的分布情况，需要添加时再打开表单。"
   },
   "actions": {
-    "newPost": "添加邮筒（箱）",
+    "newPost": "添加邮筒（箱）/报刊亭",
     "backToMap": "返回地图",
     "clear": "关闭",
     "submit": "提交",
     "submitting": "提交中..."
   },
   "ui": {
-    "language": "语言"
+    "language": "语言",
+    "filters": "筛选"
   },
   "states": {
-    "loadingPosts": "正在加载邮筒（箱）...",
-    "loadFailed": "加载邮筒（箱）失败。",
-    "checkEmail": "请查收电子邮件并点击验证链接以发布邮筒（箱）。",
+    "loadingPosts": "正在加载邮筒（箱）与报刊亭...",
+    "loadFailed": "加载邮筒（箱）与报刊亭失败。",
+    "checkEmail": "请查收电子邮件并点击验证链接以发布条目。",
     "submitFailed": "提交失败。请检查表单字段。"
   },
   "details": {
     "title": "详情",
     "emptyTitle": "请选择一个标记点查看",
-    "subtitle": "所选邮筒（箱）的摘要",
+    "subtitle": "所选条目的摘要",
     "emptySubtitle": "点击任意标记查看完整信息。",
     "address": "地址",
+    "coordinates": "坐标",
     "description": "描述",
     "metadata": "元数据",
     "id": "ID",
+    "type": "类型",
     "zip": "邮编",
     "pickupTime": "开取时间",
     "station": "责任部门",
     "status": "状态",
     "format": "样式",
-    "emptyTitleShort": "未选择邮筒（箱）",
-    "emptyHint": "点击地图标记点以查看邮筒（箱）详情。",
+    "lastConfirmed": "最近确认日期",
+    "pictures": "实拍图",
+    "emptyTitleShort": "未选择条目",
+    "emptyHint": "点击地图标记点以查看详情。",
     "stamp": "邮戳文字"
   },
   "form": {
     "mapHint": "点击地图或在下方手动输入坐标。",
+    "type": "类型",
     "name": "名称",
     "latitude": "纬度",
     "longitude": "经度",
@@ -51,7 +57,14 @@
     "station": "责任部门（可选）",
     "stamp": "邮戳文字（可选）",
     "status": "状态（必选）",
-    "format": "样式（必选）"
+    "format": "样式（必选）",
+    "pictures": "实拍图（报刊亭必填）",
+    "picturesHint": "每行一个图片链接",
+    "picturesNote": "图片更新时间将作为最近确认日期。"
+  },
+  "types": {
+    "mailbox": "邮筒（箱）",
+    "kiosk": "报刊亭"
   },
   "status": {
     "normal": "正常",
