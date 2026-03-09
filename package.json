@@ -21,13 +21,13 @@
     "leaflet": "^1.9.4",
     "nodemailer": "^6.9.16",
     "nuxt": "^4.3.0",
-    "pg": "^8.18.0",
+    "pg": "^8.20.0",
     "tailwindcss": "^4.1.18",
     "vue": "^3.5.27",
     "vue-router": "^5.0.3"
   },
   "devDependencies": {
-    "@types/pg": "^8.16.0",
+    "@types/pg": "^8.18.0",
     "@types/nodemailer": "^7.0.9",
     "dotenv": "^17.2.3",
     "prettier": "3.8.1",
