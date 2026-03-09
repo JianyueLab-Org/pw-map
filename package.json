@@ -22,7 +22,7 @@
     "nodemailer": "^6.9.16",
     "nuxt": "^4.3.0",
     "pg": "^8.18.0",
-    "tailwindcss": "^4.1.18",
+    "tailwindcss": "^4.2.1",
     "vue": "^3.5.27",
     "vue-router": "^5.0.3"
   },
