@@ -139,7 +139,7 @@ export default defineEventHandler(async (event) => {
   const errors: Array<{ index: number; message: string }> = [];
   const validRows: Array<{ index: number; data: NormalizedPost }> = [];
 
-  items.forEach((item, index) => {
+  items.forEach((item: unknown, index: number) => {
     const { data, error } = normalizeItem(item);
     if (error) {
       errors.push({ index, message: error });
