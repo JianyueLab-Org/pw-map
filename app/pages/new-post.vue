@@ -20,6 +20,22 @@ const submissionState = ref<"idle" | "submitting" | "success" | "error">(
   "idle",
 );
 const submissionMessage = ref("");
+const bulkState = ref<"idle" | "submitting" | "success" | "error">("idle");
+const bulkMessage = ref("");
+const bulkPayload = ref(`[
+  {
+    "type": "mailbox",
+    "name": "Sample Mailbox",
+    "lat": 31.2304,
+    "lon": 121.4737,
+    "address": "Sample Address",
+    "description": "Imported in batch",
+    "user": "bulk-import",
+    "zipcode": 200000,
+    "status": 0,
+    "format": 0
+  }
+]`);
 
 const { refresh } = await useFetch("/api/posts", {
   server: false,
@@ -126,6 +142,53 @@ const submit = async () => {
   } catch (err) {
     submissionState.value = "error";
     submissionMessage.value = t("states.submitFailed");
+    console.error(err);
+  }
+};
+
+const submitBulkImport = async () => {
+  bulkState.value = "submitting";
+  bulkMessage.value = "";
+
+  let items: unknown;
+
+  try {
+    items = JSON.parse(bulkPayload.value);
+  } catch {
+    bulkState.value = "error";
+    bulkMessage.value = t("states.bulkInvalidJson");
+    return;
+  }
+
+  try {
+    const result = await $fetch<{
+      total: number;
+      imported: number;
+      failed: number;
+      errors: Array<{ index: number; message: string }>;
+    }>("/api/posts/bulk", {
+      method: "POST",
+      body: { items },
+    });
+
+    bulkState.value = result.failed === 0 ? "success" : "error";
+    bulkMessage.value = t("states.bulkResult", {
+      imported: result.imported,
+      failed: result.failed,
+    });
+
+    if (result.errors.length > 0) {
+      const detail = result.errors
+        .slice(0, 5)
+        .map((entry) => `#${entry.index + 1}: ${entry.message}`)
+        .join("; ");
+      bulkMessage.value = `${bulkMessage.value} ${detail}`;
+    }
+
+    await refresh();
+  } catch (err) {
+    bulkState.value = "error";
+    bulkMessage.value = t("states.bulkFailed");
     console.error(err);
   }
 };
@@ -465,6 +528,47 @@ const submit = async () => {
           }"
         >
           {{ submissionMessage }}
+        </p>
+      </form>
+    </section>
+
+    <section
+      class="rounded-2xl bg-white p-5 shadow-[0_12px_30px_rgba(15,23,42,0.08)]"
+    >
+      <h2 class="text-base font-semibold text-slate-900">
+        {{ $t("form.bulkTitle") }}
+      </h2>
+      <p class="mt-1 text-xs text-slate-600">
+        {{ $t("form.bulkHint") }}
+      </p>
+
+      <form class="mt-3 flex flex-col gap-3" @submit.prevent="submitBulkImport">
+        <textarea
+          v-model="bulkPayload"
+          rows="14"
+          class="font-mono rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-900 placeholder:text-slate-400 focus-visible:border-red-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500/30"
+        />
+        <button
+          type="submit"
+          :disabled="bulkState === 'submitting'"
+          class="rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:-translate-y-0.5 hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
+        >
+          {{
+            bulkState === "submitting"
+              ? $t("actions.submitting")
+              : $t("actions.bulkImport")
+          }}
+        </button>
+        <p
+          v-if="bulkMessage"
+          class="text-xs"
+          :class="{
+            'text-emerald-700': bulkState === 'success',
+            'text-red-700': bulkState === 'error',
+            'text-slate-600': bulkState === 'submitting',
+          }"
+        >
+          {{ bulkMessage }}
         </p>
       </form>
     </section>

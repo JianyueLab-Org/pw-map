@@ -9,7 +9,8 @@
     "backToMap": "返回地图",
     "clear": "关闭",
     "submit": "提交",
-    "submitting": "提交中..."
+    "submitting": "提交中...",
+    "bulkImport": "批量导入"
   },
   "ui": {
     "language": "语言",
@@ -19,7 +20,10 @@
     "loadingPosts": "正在加载邮筒（箱）与报刊亭...",
     "loadFailed": "加载邮筒（箱）与报刊亭失败。",
     "checkEmail": "请查收电子邮件并点击验证链接以发布条目。",
-    "submitFailed": "提交失败。请检查表单字段。"
+    "submitFailed": "提交失败。请检查表单字段。",
+    "bulkFailed": "批量导入失败，请稍后重试。",
+    "bulkInvalidJson": "JSON 格式错误，请先修正。",
+    "bulkResult": "批量导入完成：成功 {imported} 条，失败 {failed} 条。"
   },
   "details": {
     "title": "详情",
@@ -60,7 +64,9 @@
     "format": "样式（必选）",
     "pictures": "实拍图（报刊亭必填）",
     "picturesHint": "每行一个图片链接",
-    "picturesNote": "图片更新时间将作为最近确认日期。"
+    "picturesNote": "图片更新时间将作为最近确认日期。",
+    "bulkTitle": "批量导入（JSON）",
+    "bulkHint": "粘贴 JSON 数组后提交；每个对象需包含 name、lat、lon、description，邮筒还需 address、zipcode、format。"
   },
   "types": {
     "mailbox": "邮筒（箱）",

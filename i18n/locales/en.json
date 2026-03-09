@@ -9,7 +9,8 @@
     "backToMap": "Back to the map",
     "clear": "Close",
     "submit": "Submit",
-    "submitting": "Submitting..."
+    "submitting": "Submitting...",
+    "bulkImport": "Bulk Import"
   },
   "ui": {
     "language": "Language",
@@ -19,7 +20,10 @@
     "loadingPosts": "Loading postboxes & kiosks...",
     "loadFailed": "Failed to load postboxes & kiosks.",
     "checkEmail": "Check your email for a verification link to publish the entry.",
-    "submitFailed": "Submission failed. Check the form fields."
+    "submitFailed": "Submission failed. Check the form fields.",
+    "bulkFailed": "Bulk import failed. Please try again.",
+    "bulkInvalidJson": "Invalid JSON format. Please fix it first.",
+    "bulkResult": "Bulk import completed: {imported} succeeded, {failed} failed."
   },
   "details": {
     "title": "Details",
@@ -60,7 +64,9 @@
     "format": "Format (required)",
     "pictures": "Pictures (required for kiosk)",
     "picturesHint": "One image URL per line",
-    "picturesNote": "Pictures determine the last confirmed date."
+    "picturesNote": "Pictures determine the last confirmed date.",
+    "bulkTitle": "Bulk Import (JSON)",
+    "bulkHint": "Paste a JSON array and submit. Each item requires name, lat, lon, description; mailbox also needs address, zipcode, and format."
   },
   "types": {
     "mailbox": "Postbox",
