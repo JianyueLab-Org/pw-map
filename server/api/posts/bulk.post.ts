@@ -59,7 +59,7 @@ const FORMAT_STRING_MAP: Record<string, number> = {
 
 const normalizeStatus = (value: unknown): number => {
   if (typeof value === "string" && value in STATUS_STRING_MAP) {
-    return STATUS_STRING_MAP[value];
+    return STATUS_STRING_MAP[value] ?? 0;
   }
   const n = Number(value);
   return Number.isFinite(n) ? n : 0;
@@ -67,7 +67,7 @@ const normalizeStatus = (value: unknown): number => {
 
 const normalizeFormat = (value: unknown): number => {
   if (typeof value === "string" && value in FORMAT_STRING_MAP) {
-    return FORMAT_STRING_MAP[value];
+    return FORMAT_STRING_MAP[value] ?? Number(value);
   }
   return Number(value);
 };

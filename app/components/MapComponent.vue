@@ -31,7 +31,7 @@
 </template>
 
 <script setup lang="ts">
-import type { LeafletMouseEvent } from "leaflet";
+import type { LeafletMouseEvent, Icon, IconOptions } from "leaflet";
 import { divIcon } from "leaflet";
 import { convertCoordinatesByCountry } from "~/utils/coordinateConverter";
 
@@ -52,7 +52,7 @@ const STATUS_COLORS: Record<number, string> = {
   4: "#94a3b8", // unknown → gray
 };
 
-const getStatusIcon = (status?: number | null) => {
+const getStatusIcon = (status?: number | null): Icon<IconOptions> => {
   const color =
     status != null && status in STATUS_COLORS
       ? STATUS_COLORS[status]
@@ -63,7 +63,7 @@ const getStatusIcon = (status?: number | null) => {
     iconSize: [14, 14],
     iconAnchor: [7, 7],
     popupAnchor: [0, -10],
-  });
+  }) as unknown as Icon<IconOptions>;
 };
 
 const props = defineProps<{
