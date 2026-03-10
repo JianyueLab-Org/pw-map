@@ -30,7 +30,7 @@ const bulkPayload = ref(`[
     "lon": 121.4737,
     "address": "Sample Address",
     "description": "Imported in batch",
-    "user": "bulk-import",
+    "user": "user@example.com",
     "zipcode": 200000,
     "pickupTime": "周一至周日，每天15:00、17:30",
     "station": "Sample Station",

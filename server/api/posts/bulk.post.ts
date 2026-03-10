@@ -17,6 +17,9 @@ type NormalizedPost = {
   lastConfirmedAt: Date | null;
 };
 
+const isValidEmail = (value: string) =>
+  /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+
 const toRequiredString = (value: unknown) => String(value ?? "").trim();
 
 const toOptionalString = (value: unknown) => {
@@ -84,7 +87,7 @@ const normalizeItem = (
 
   const name = toRequiredString(row.name);
   const description = toRequiredString(row.description);
-  const user = toOptionalString(row.user) ?? "bulk-import";
+  const user = toRequiredString(row.user);
   const address = toOptionalString(row.address);
   const pickupTime = toOptionalString(row.pickupTime);
   const station = toOptionalString(row.station);
@@ -107,6 +110,10 @@ const normalizeItem = (
 
   if (!name || !description) {
     return { error: "name and description are required" };
+  }
+
+  if (!user || !isValidEmail(user)) {
+    return { error: "user must be a valid email address" };
   }
 
   if (!Number.isFinite(lat) || !Number.isFinite(lon)) {
