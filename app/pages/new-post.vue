@@ -32,8 +32,11 @@ const bulkPayload = ref(`[
     "description": "Imported in batch",
     "user": "bulk-import",
     "zipcode": 200000,
-    "status": 0,
-    "format": 0
+    "pickupTime": "周一至周日，每天15:00、17:30",
+    "station": "Sample Station",
+    "PostmarkText": "Sample Postmark",
+    "status": "normal",
+    "format": "wallMountedCube"
   }
 ]`);
 

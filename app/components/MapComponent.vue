@@ -17,6 +17,7 @@
         v-for="marker in convertedMarkers"
         :key="marker.id"
         :lat-lng="[marker.lat, marker.lon]"
+        :icon="getStatusIcon(marker.status)"
         @click="handleMarkerClick(marker)"
       >
         <LPopup>{{ marker.name }}</LPopup>
@@ -31,6 +32,7 @@
 
 <script setup lang="ts">
 import type { LeafletMouseEvent } from "leaflet";
+import { divIcon } from "leaflet";
 import { convertCoordinatesByCountry } from "~/utils/coordinateConverter";
 
 interface Marker {
@@ -39,7 +41,30 @@ interface Marker {
   lat: number;
   lon: number;
   country?: string;
+  status?: number | null;
 }
+
+const STATUS_COLORS: Record<number, string> = {
+  0: "#22c55e", // normal → green
+  1: "#eab308", // seasonal → yellow
+  2: "#eab308", // internal → yellow
+  3: "#ef4444", // discarded → red
+  4: "#94a3b8", // unknown → gray
+};
+
+const getStatusIcon = (status?: number | null) => {
+  const color =
+    status != null && status in STATUS_COLORS
+      ? STATUS_COLORS[status]
+      : "#94a3b8";
+  return divIcon({
+    html: `<div style="width:14px;height:14px;border-radius:50%;background:${color};border:2px solid rgba(255,255,255,0.8);box-shadow:0 1px 4px rgba(0,0,0,0.4);"></div>`,
+    className: "",
+    iconSize: [14, 14],
+    iconAnchor: [7, 7],
+    popupAnchor: [0, -10],
+  });
+};
 
 const props = defineProps<{
   markers?: Marker[];

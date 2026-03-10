@@ -378,7 +378,9 @@ watch(
                     $t("details.lastConfirmed")
                   }}</span>
                   <span>{{
-                    formatDateTime(selectedPost.lastConfirmedAt) || "—"
+                    formatDateTime(selectedPost.lastConfirmedAt) ||
+                    formatDateTime(selectedPost.createdAt) ||
+                    "—"
                   }}</span>
                 </div>
                 <div

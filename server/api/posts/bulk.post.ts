@@ -42,6 +42,36 @@ const normalizePictures = (value: unknown) => {
   return [] as string[];
 };
 
+const STATUS_STRING_MAP: Record<string, number> = {
+  normal: 0,
+  seasonal: 1,
+  internal: 2,
+  discarded: 3,
+  unknown: 4,
+};
+
+const FORMAT_STRING_MAP: Record<string, number> = {
+  wallMountedCube: 0,
+  freestandingCylinder: 1,
+  freestandingRectangularPrism: 2,
+  noPhoto: 3,
+};
+
+const normalizeStatus = (value: unknown): number => {
+  if (typeof value === "string" && value in STATUS_STRING_MAP) {
+    return STATUS_STRING_MAP[value];
+  }
+  const n = Number(value);
+  return Number.isFinite(n) ? n : 0;
+};
+
+const normalizeFormat = (value: unknown): number => {
+  if (typeof value === "string" && value in FORMAT_STRING_MAP) {
+    return FORMAT_STRING_MAP[value];
+  }
+  return Number(value);
+};
+
 const normalizeItem = (
   item: unknown,
 ): { data?: NormalizedPost; error?: string } => {
@@ -58,17 +88,20 @@ const normalizeItem = (
   const address = toOptionalString(row.address);
   const pickupTime = toOptionalString(row.pickupTime);
   const station = toOptionalString(row.station);
-  const stamp = toOptionalString(row.stamp);
+  // Support both "stamp" and "PostmarkText" as field names
+  const stamp = toOptionalString(row.stamp ?? row.PostmarkText);
 
   const lat = Number(row.lat);
   const lon = Number(row.lon);
-  const status = Number.isFinite(Number(row.status)) ? Number(row.status) : 0;
+  const status = normalizeStatus(row.status);
   const zipcode =
     row.zipcode === null || row.zipcode === undefined
       ? null
       : Number(row.zipcode);
   const format =
-    row.format === null || row.format === undefined ? null : Number(row.format);
+    row.format === null || row.format === undefined
+      ? null
+      : normalizeFormat(row.format);
 
   const pictures = normalizePictures(row.pictures);
 
