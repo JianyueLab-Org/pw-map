@@ -17,46 +17,46 @@
         v-for="marker in convertedMarkers"
         :key="marker.id"
         :lat-lng="[marker.lat, marker.lon]"
-        :icon="getStatusIcon(marker.status)"
+        @click="() => handleMarkerClick(marker)"
         @click="handleMarkerClick(marker)"
-      >
-        <LPopup>{{ marker.name }}</LPopup>
-      </LMarker>
-      <LMarker
-        v-if="selectionMarker"
+        <LIcon
+          :icon-url="getIconUrl(marker.color, marker.id === selectedMarkerId)"
+          :icon-size="[25, 41]"
+          :icon-anchor="[12, 41]"
+        />
         :lat-lng="[selectionMarker.lat, selectionMarker.lon]"
       />
     </LMap>
   </div>
 </template>
 
-<script setup lang="ts">
-import type { LeafletMouseEvent, Icon, IconOptions } from "leaflet";
-import { divIcon } from "leaflet";
-import { convertCoordinatesByCountry } from "~/utils/coordinateConverter";
-
-interface Marker {
-  id: string;
-  name: string;
-  lat: number;
-  lon: number;
-  country?: string;
+import "leaflet/dist/leaflet.css";
+import {
+  LMap,
+  LTileLayer,
+  LMarker,
+  LIcon,
+  LControlLayers,
+  LControl,
+} from "@vue-leaflet/vue-leaflet";
+import { ref, onMounted, watch, computed } from "vue";
+import type { LatLngExpression, LeafletMouseEvent, Icon, IconOptions } from "leaflet";
   status?: number | null;
 }
 
-const STATUS_COLORS: Record<number, string> = {
+type Marker = {
   0: "#22c55e", // normal → green
   1: "#eab308", // seasonal → yellow
   2: "#eab308", // internal → yellow
   3: "#ef4444", // discarded → red
-  4: "#94a3b8", // unknown → gray
+  color: string;
 };
 
 const getStatusIcon = (status?: number | null): Icon<IconOptions> => {
   const color =
     status != null && status in STATUS_COLORS
       ? STATUS_COLORS[status]
-      : "#94a3b8";
+  selectedMarkerId?: string | null;
   return divIcon({
     html: `<div style="width:14px;height:14px;border-radius:50%;background:${color};border:2px solid rgba(255,255,255,0.8);box-shadow:0 1px 4px rgba(0,0,0,0.4);"></div>`,
     className: "",
@@ -114,11 +114,11 @@ const convertedMarkers = computed(() => {
 });
 
 const selectionMarker = computed(() => {
-  if (!props.selected) return null;
-  if (!Number.isFinite(props.selected.lat)) return null;
-  if (!Number.isFinite(props.selected.lon)) return null;
-  return props.selected;
-});
+const getIconUrl = (color: string, isSelected: boolean) => {
+  const selectedSuffix = isSelected ? "-selected" : "";
+  return `/markers/${color}${selectedSuffix}.png`;
+};
+
 
 // Update center when selection changes
 watch(selectionMarker, (newSelection) => {
@@ -127,19 +127,19 @@ watch(selectionMarker, (newSelection) => {
   }
 });
 
-const handleMapClick = (event: LeafletMouseEvent) => {
-  if (!props.enableSelection) return;
-  emit("select", { lat: event.latlng.lat, lon: event.latlng.lng });
-};
 
-const handleMarkerClick = (marker: Marker) => {
-  emit("markerSelect", marker);
-};
-</script>
-
-<style scoped>
-.map-container {
-  height: 100%;
+watch(
+  () => props.selectedMarkerId,
+  (newId) => {
+    if (newId) {
+      const selectedMarker = props.markers.find((m) => m.id === newId);
+      if (selectedMarker && mapRef.value?.leafletObject) {
+        const map = mapRef.value.leafletObject;
+        map.setView([selectedMarker.lat, selectedMarker.lon], 15);
+      }
+    }
+  },
+);
   width: 100%;
 }
 

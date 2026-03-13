@@ -73,25 +73,51 @@ const filteredPosts = computed(() => {
 });
 
 const markers = computed(() => {
-  return filteredPosts.value.map((post) => ({
-    id: String(post.id),
-    name: post.name,
-    lat: post.lat,
-    lon: post.lon,
-    address: post.address,
-    description: post.description,
-    user: post.user,
-    pickupTime: post.pickupTime,
-    station: post.station,
-    stamp: post.stamp,
-    zipcode: post.zipcode,
-    status: post.status,
-    format: post.format,
-    type: normalizeType(post.type),
-    pictures: post.pictures ?? [],
-    lastConfirmedAt: post.lastConfirmedAt ?? null,
-    createdAt: post.createdAt,
-  }));
+  return filteredPosts.value.map((post) => {
+    // 根据 post.status 设置标记颜色
+    // 0: 正常（绿色）
+    // 1: 时令性（黄色）
+    // 2: 内部用（红色）
+    // 3: 已废弃（黑灰色）
+    // 4: 未知/待确认（灰色）
+    const color = (() => {
+      switch (post.status) {
+        case 0:
+          return "green";
+        case 1:
+          return "yellow";
+        case 2:
+          return "red";
+        case 3:
+          return "black";
+        case 4:
+          return "gray";
+        default:
+          return "gray";
+      }
+    })();
+
+    return {
+      id: String(post.id),
+      name: post.name,
+      lat: post.lat,
+      lon: post.lon,
+      address: post.address,
+      description: post.description,
+      user: post.user,
+      pickupTime: post.pickupTime,
+      station: post.station,
+      stamp: post.stamp,
+      zipcode: post.zipcode,
+      status: post.status,
+      format: post.format,
+      type: normalizeType(post.type),
+      pictures: post.pictures ?? [],
+      lastConfirmedAt: post.lastConfirmedAt ?? null,
+      createdAt: post.createdAt,
+      color, // 新增 color 属性
+    };
+  });
 });
 
 const selectedPostId = ref<string | null>(null);
@@ -253,7 +279,7 @@ watch(
           <ClientOnly>
             <MapComponent
               :markers="markers"
-              class="h-full w-full"
+              :selected-marker-id="selectedPostId"
               @marker-select="handleMarkerSelect"
             />
             <template #fallback>
