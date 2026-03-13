@@ -27,8 +27,8 @@
     "vue-router": "^5.0.3"
   },
   "devDependencies": {
-    "@types/pg": "^8.18.0",
     "@types/nodemailer": "^7.0.9",
+    "@types/pg": "^8.18.0",
     "dotenv": "^17.2.3",
     "prettier": "3.8.1",
     "prettier-plugin-prisma": "^5.0.0",

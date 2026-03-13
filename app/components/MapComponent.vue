@@ -25,7 +25,11 @@
           :icon-anchor="[12, 41]"
         />
       </LMarker>
+    </LMap>
+  </div>
+</template>
 
+<script setup lang="ts">
 import "leaflet/dist/leaflet.css";
 import {
   LMap,
@@ -36,23 +40,37 @@ import {
   LControl,
 } from "@vue-leaflet/vue-leaflet";
 import { ref, onMounted, watch, computed } from "vue";
-import type { LatLngExpression, LeafletMouseEvent, Icon, IconOptions } from "leaflet";
+import type {
+  LatLngExpression,
+  LeafletMouseEvent,
+  Icon,
+  IconOptions,
+} from "leaflet";
+import { divIcon } from "leaflet";
+import { convertCoordinatesByCountry } from "~/utils/coordinateConverter";
+
+interface Marker {
+  id: string;
+  lat: number;
+  lon: number;
+  country: string;
+  name: string;
   status?: number | null;
+  color: string;
 }
 
-type Marker = {
+const STATUS_COLORS: Record<number, string> = {
   0: "#22c55e", // normal → green
   1: "#eab308", // seasonal → yellow
   2: "#eab308", // internal → yellow
   3: "#ef4444", // discarded → red
-  color: string;
 };
 
 const getStatusIcon = (status?: number | null): Icon<IconOptions> => {
   const color =
     status != null && status in STATUS_COLORS
       ? STATUS_COLORS[status]
-  selectedMarkerId?: string | null;
+      : "#808080";
   return divIcon({
     html: `<div style="width:14px;height:14px;border-radius:50%;background:${color};border:2px solid rgba(255,255,255,0.8);box-shadow:0 1px 4px rgba(0,0,0,0.4);"></div>`,
     className: "",
@@ -75,6 +93,7 @@ const emit = defineEmits<{
 
 const zoom = ref(13);
 const mapRef = ref();
+const selectedMarkerId = ref<string | null>(null);
 
 // Default center (London)
 const center = ref<[number, number]>([51.505, -0.09]);
@@ -110,11 +129,30 @@ const convertedMarkers = computed(() => {
 });
 
 const selectionMarker = computed(() => {
+  if (!props.enableSelection || !props.selected) return null;
+  const [lat, lon] = convertCoordinatesByCountry(
+    props.selected.lat,
+    props.selected.lon,
+    "WGS84",
+  );
+  return { lat, lon };
+});
+
 const getIconUrl = (color: string, isSelected: boolean) => {
   const selectedSuffix = isSelected ? "-selected" : "";
   return `/markers/${color}${selectedSuffix}.png`;
 };
 
+const handleMapClick = (event: LeafletMouseEvent) => {
+  if (props.enableSelection) {
+    emit("select", { lat: event.latlng.lat, lon: event.latlng.lng });
+  }
+};
+
+const handleMarkerClick = (marker: Marker) => {
+  selectedMarkerId.value = marker.id;
+  emit("markerSelect", marker);
+};
 
 // Update center when selection changes
 watch(selectionMarker, (newSelection) => {
@@ -123,19 +161,20 @@ watch(selectionMarker, (newSelection) => {
   }
 });
 
-
 watch(
-  () => props.selectedMarkerId,
-  (newId) => {
-    if (newId) {
-      const selectedMarker = props.markers.find((m) => m.id === newId);
-      if (selectedMarker && mapRef.value?.leafletObject) {
-        const map = mapRef.value.leafletObject;
-        map.setView([selectedMarker.lat, selectedMarker.lon], 15);
-      }
+  () => props.markers,
+  () => {
+    if (mapRef.value && bounds.value) {
+      mapRef.value.leafletObject.fitBounds(bounds.value);
     }
   },
+  { immediate: true },
 );
+</script>
+
+<style scoped>
+.map-container {
+  height: 100%;
   width: 100%;
 }
 
