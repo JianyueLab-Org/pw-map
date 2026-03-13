@@ -18,17 +18,13 @@
         :key="marker.id"
         :lat-lng="[marker.lat, marker.lon]"
         @click="() => handleMarkerClick(marker)"
-        @click="handleMarkerClick(marker)"
+      >
         <LIcon
           :icon-url="getIconUrl(marker.color, marker.id === selectedMarkerId)"
           :icon-size="[25, 41]"
           :icon-anchor="[12, 41]"
         />
-        :lat-lng="[selectionMarker.lat, selectionMarker.lon]"
-      />
-    </LMap>
-  </div>
-</template>
+      </LMarker>
 
 import "leaflet/dist/leaflet.css";
 import {
