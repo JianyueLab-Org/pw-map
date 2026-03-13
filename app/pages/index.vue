@@ -102,6 +102,7 @@ const markers = computed(() => {
       name: post.name,
       lat: post.lat,
       lon: post.lon,
+      country: "cmn",
       address: post.address,
       description: post.description,
       user: post.user,
