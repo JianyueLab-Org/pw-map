@@ -2,7 +2,7 @@ name: Deploy
 
 on:
   workflow_run:
-    workflows: ["Core Check"]
+    workflows: ["Core Check", "CodeQL"]
     types:
       - completed
     branches:
