@@ -17,13 +17,9 @@
         v-for="marker in convertedMarkers"
         :key="marker.id"
         :lat-lng="[marker.lat, marker.lon]"
+        :icon="getStatusIcon(marker.status, marker.id === selectedMarkerId)"
         @click="() => handleMarkerClick(marker)"
       >
-        <LIcon
-          :icon-url="getIconUrl(marker.color, marker.id === selectedMarkerId)"
-          :icon-size="[25, 41]"
-          :icon-anchor="[12, 41]"
-        />
       </LMarker>
     </LMap>
   </div>
@@ -35,7 +31,6 @@ import {
   LMap,
   LTileLayer,
   LMarker,
-  LIcon,
   LControlLayers,
   LControl,
 } from "@vue-leaflet/vue-leaflet";
@@ -56,7 +51,6 @@ interface Marker {
   country: string;
   name: string;
   status?: number | null;
-  color: string;
 }
 
 const STATUS_COLORS: Record<number, string> = {
@@ -66,16 +60,23 @@ const STATUS_COLORS: Record<number, string> = {
   3: "#ef4444", // discarded → red
 };
 
-const getStatusIcon = (status?: number | null): Icon<IconOptions> => {
+const getStatusIcon = (
+  status?: number | null,
+  isSelected = false,
+): Icon<IconOptions> => {
   const color =
     status != null && status in STATUS_COLORS
       ? STATUS_COLORS[status]
       : "#808080";
+  const size = isSelected ? 20 : 14;
+  const border = isSelected
+    ? "3px solid #ffffff"
+    : "2px solid rgba(255,255,255,0.8)";
   return divIcon({
-    html: `<div style="width:14px;height:14px;border-radius:50%;background:${color};border:2px solid rgba(255,255,255,0.8);box-shadow:0 1px 4px rgba(0,0,0,0.4);"></div>`,
+    html: `<div style="width:${size}px;height:${size}px;border-radius:50%;background:${color};border:${border};box-shadow:0 1px 4px rgba(0,0,0,0.4);box-sizing:border-box;"></div>`,
     className: "",
-    iconSize: [14, 14],
-    iconAnchor: [7, 7],
+    iconSize: [size, size],
+    iconAnchor: [size / 2, size / 2],
     popupAnchor: [0, -10],
   }) as unknown as Icon<IconOptions>;
 };
@@ -137,11 +138,6 @@ const selectionMarker = computed(() => {
   );
   return { lat, lon };
 });
-
-const getIconUrl = (color: string, isSelected: boolean) => {
-  const selectedSuffix = isSelected ? "-selected" : "";
-  return `/markers/${color}${selectedSuffix}.png`;
-};
 
 const handleMapClick = (event: LeafletMouseEvent) => {
   if (props.enableSelection) {

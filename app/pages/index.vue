@@ -74,29 +74,6 @@ const filteredPosts = computed(() => {
 
 const markers = computed(() => {
   return filteredPosts.value.map((post) => {
-    // 根据 post.status 设置标记颜色
-    // 0: 正常（绿色）
-    // 1: 时令性（黄色）
-    // 2: 内部用（红色）
-    // 3: 已废弃（黑灰色）
-    // 4: 未知/待确认（灰色）
-    const color = (() => {
-      switch (post.status) {
-        case 0:
-          return "green";
-        case 1:
-          return "yellow";
-        case 2:
-          return "red";
-        case 3:
-          return "black";
-        case 4:
-          return "gray";
-        default:
-          return "gray";
-      }
-    })();
-
     return {
       id: String(post.id),
       name: post.name,
@@ -116,7 +93,6 @@ const markers = computed(() => {
       pictures: post.pictures ?? [],
       lastConfirmedAt: post.lastConfirmedAt ?? null,
       createdAt: post.createdAt,
-      color, // 新增 color 属性
     };
   });
 });
