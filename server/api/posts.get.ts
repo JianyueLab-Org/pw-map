@@ -16,7 +16,7 @@ type PostRecord = {
   pickupTime: string | null;
   station: string | null;
   stamp: string | null;
-  zipcode: number | null;
+  zipcode: string | null;
   status: number | null;
   format: number | null;
   pictures: string[] | null;

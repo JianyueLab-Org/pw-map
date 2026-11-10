@@ -14,7 +14,7 @@
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
       />
       <LMarker
-        v-for="marker in convertedMarkers"
+        v-for="marker in markerList"
         :key="marker.id"
         :lat-lng="[marker.lat, marker.lon]"
         :icon="getStatusIcon(marker.status, marker.id === selectedMarkerId)"
@@ -27,14 +27,8 @@
 
 <script setup lang="ts">
 import "leaflet/dist/leaflet.css";
-import {
-  LMap,
-  LTileLayer,
-  LMarker,
-  LControlLayers,
-  LControl,
-} from "@vue-leaflet/vue-leaflet";
-import { ref, onMounted, watch, computed } from "vue";
+import { LMap, LTileLayer, LMarker } from "@vue-leaflet/vue-leaflet";
+import { ref, watch, computed } from "vue";
 import type {
   LatLngExpression,
   LeafletMouseEvent,
@@ -42,13 +36,11 @@ import type {
   IconOptions,
 } from "leaflet";
 import { divIcon } from "leaflet";
-import { convertCoordinatesByCountry } from "~/utils/coordinateConverter";
 
 interface Marker {
   id: string;
   lat: number;
   lon: number;
-  country: string;
   name: string;
   status?: number | null;
 }
@@ -85,6 +77,7 @@ const props = defineProps<{
   markers?: Marker[];
   enableSelection?: boolean;
   selected?: { lat: number; lon: number } | null;
+  selectedMarkerId?: string | null;
 }>();
 
 const emit = defineEmits<{
@@ -94,7 +87,6 @@ const emit = defineEmits<{
 
 const zoom = ref(13);
 const mapRef = ref();
-const selectedMarkerId = ref<string | null>(null);
 
 // Default center (London)
 const center = ref<[number, number]>([51.505, -0.09]);
@@ -104,10 +96,10 @@ const center = ref<[number, number]>([51.505, -0.09]);
 const bounds = computed<[[number, number], [number, number]] | undefined>(
   () => {
     if (selectionMarker.value) return undefined;
-    if (convertedMarkers.value.length === 0) return undefined;
+    if (markerList.value.length === 0) return undefined;
 
-    const lats = convertedMarkers.value.map((m) => m.lat);
-    const lons = convertedMarkers.value.map((m) => m.lon);
+    const lats = markerList.value.map((m) => m.lat);
+    const lons = markerList.value.map((m) => m.lon);
 
     return [
       [Math.min(...lats), Math.min(...lons)],
@@ -116,28 +108,11 @@ const bounds = computed<[[number, number], [number, number]] | undefined>(
   },
 );
 
-// Convert coordinates if in China
-const convertedMarkers = computed(() => {
-  if (!props.markers) return [];
-  return props.markers.map((marker) => {
-    const [lat, lon] = convertCoordinatesByCountry(
-      marker.lat,
-      marker.lon,
-      marker.country,
-    );
-    return { ...marker, lat, lon };
-  });
-});
+const markerList = computed(() => props.markers ?? []);
 
-const selectionMarker = computed(() => {
-  if (!props.enableSelection || !props.selected) return null;
-  const [lat, lon] = convertCoordinatesByCountry(
-    props.selected.lat,
-    props.selected.lon,
-    "WGS84",
-  );
-  return { lat, lon };
-});
+const selectionMarker = computed(() =>
+  props.enableSelection && props.selected ? props.selected : null,
+);
 
 const handleMapClick = (event: LeafletMouseEvent) => {
   if (props.enableSelection) {
@@ -146,7 +121,6 @@ const handleMapClick = (event: LeafletMouseEvent) => {
 };
 
 const handleMarkerClick = (marker: Marker) => {
-  selectedMarkerId.value = marker.id;
   emit("markerSelect", marker);
 };
 

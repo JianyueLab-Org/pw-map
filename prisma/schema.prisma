@@ -24,7 +24,7 @@ model Posts {
   pickupTime      String? // Pickup time of the post
   station         String? // Station where the post is located
   stamp           String? // Stamp of the post
-  zipcode         Int? // Zipcode of the post
+  zipcode         String? // Zipcode of the post (digits, leading zeros kept)
   status          Int // Status of the post
   format          Int? // Format of the post
   pictures        String[]  @default([])
@@ -46,7 +46,7 @@ model PendingPosts {
   pickupTime        String?
   station           String?
   stamp             String?
-  zipcode           Int?
+  zipcode           String?
   status            Int
   format            Int?
   pictures          String[] @default([])
