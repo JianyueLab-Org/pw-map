@@ -66,7 +66,8 @@
     "picturesHint": "One image URL per line",
     "picturesNote": "Pictures determine the last confirmed date.",
     "bulkTitle": "Bulk Import (JSON)",
-    "bulkHint": "Paste a JSON array and submit. Each item requires name, lat, lon, description; mailbox also needs address, zipcode, and format."
+    "bulkHint": "Paste a JSON array and submit. Each item requires name, lat, lon, description, user; mailbox also needs address, zipcode, and format. Coordinates are WGS-84; set \"coordSystem\": \"gcj02\" for Amap/Tencent coordinates.",
+    "adminToken": "Admin token"
   },
   "types": {
     "mailbox": "Postbox",

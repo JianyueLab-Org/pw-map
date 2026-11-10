@@ -9,7 +9,7 @@ type Post = {
   pickupTime: string | null;
   station: string | null;
   stamp: string | null;
-  zipcode: number | null;
+  zipcode: string | null;
   status: number | null;
   format: number | null;
   pictures?: string[] | null;
@@ -79,7 +79,6 @@ const markers = computed(() => {
       name: post.name,
       lat: post.lat,
       lon: post.lon,
-      country: "cmn",
       address: post.address,
       description: post.description,
       user: post.user,

@@ -22,16 +22,18 @@ const submissionState = ref<"idle" | "submitting" | "success" | "error">(
 const submissionMessage = ref("");
 const bulkState = ref<"idle" | "submitting" | "success" | "error">("idle");
 const bulkMessage = ref("");
+const adminToken = ref("");
 const bulkPayload = ref(`[
   {
     "type": "mailbox",
     "name": "Sample Mailbox",
     "lat": 31.2304,
     "lon": 121.4737,
+    "coordSystem": "wgs84",
     "address": "Sample Address",
     "description": "Imported in batch",
     "user": "user@example.com",
-    "zipcode": 200000,
+    "zipcode": "200000",
     "pickupTime": "周一至周日，每天15:00、17:30",
     "station": "Sample Station",
     "PostmarkText": "Sample Postmark",
@@ -114,7 +116,7 @@ const submit = async () => {
         pickupTime: isKiosk.value ? null : form.pickupTime,
         station: isKiosk.value ? null : form.station,
         stamp: isKiosk.value ? null : form.stamp,
-        zipcode: isKiosk.value ? null : Number(form.zipcode),
+        zipcode: isKiosk.value ? null : form.zipcode.trim(),
         status: Number(form.status),
         format: isKiosk.value ? null : Number(form.format),
         pictures: isKiosk.value ? form.pictures : "",
@@ -172,6 +174,7 @@ const submitBulkImport = async () => {
     }>("/api/posts/bulk", {
       method: "POST",
       body: { items },
+      headers: { Authorization: `Bearer ${adminToken.value.trim()}` },
     });
 
     bulkState.value = result.failed === 0 ? "success" : "error";
@@ -339,7 +342,9 @@ const submitBulkImport = async () => {
           {{ $t("form.zip") }}
           <input
             v-model="form.zipcode"
-            type="number"
+            type="text"
+            inputmode="numeric"
+            pattern="\d{3,10}"
             required
             class="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus-visible:border-red-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500/30"
           />
@@ -546,6 +551,16 @@ const submitBulkImport = async () => {
       </p>
 
       <form class="mt-3 flex flex-col gap-3" @submit.prevent="submitBulkImport">
+        <label class="flex flex-col gap-1.5 text-sm text-slate-700">
+          {{ $t("form.adminToken") }}
+          <input
+            v-model="adminToken"
+            type="password"
+            required
+            autocomplete="off"
+            class="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus-visible:border-red-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500/30"
+          />
+        </label>
         <textarea
           v-model="bulkPayload"
           rows="14"

@@ -66,7 +66,8 @@
     "picturesHint": "每行一个图片链接",
     "picturesNote": "图片更新时间将作为最近确认日期。",
     "bulkTitle": "批量导入（JSON）",
-    "bulkHint": "粘贴 JSON 数组后提交；每个对象需包含 name、lat、lon、description，邮筒还需 address、zipcode、format。"
+    "bulkHint": "粘贴 JSON 数组后提交；每个对象需包含 name、lat、lon、description、user，邮筒还需 address、zipcode、format。坐标默认 WGS-84；高德/腾讯坐标请加 \"coordSystem\": \"gcj02\"。",
+    "adminToken": "管理员令牌"
   },
   "types": {
     "mailbox": "邮筒（箱）",

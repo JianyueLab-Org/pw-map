@@ -26,12 +26,13 @@ Pull the repo and use bun to manage this repo
 
 ## 批量导入（Bulk Import）
 
-在「新建条目」页面，切换到「批量导入」标签，将 JSON 数组粘贴到文本框后提交即可。
+在「新建条目」页面的「批量导入」区块填入管理员令牌，将 JSON 数组粘贴到文本框后提交即可。
 
 ### 接口
 
 ```
 POST /api/posts/bulk
+Authorization: Bearer <ADMIN_TOKEN>
 Content-Type: application/json
 
 { "items": [ ... ] }
@@ -39,33 +40,38 @@ Content-Type: application/json
 
 单次最多 **500** 条。
 
+服务端需设置环境变量 `ADMIN_TOKEN`；未设置时接口拒绝所有请求。`PUT /api/posts/:id` 使用同一令牌。
+
+同类型、同名称且坐标相差小于约 11 米的条目视为重复，不会写入。
+
 ---
 
 ### 字段说明
 
 #### 信箱（mailbox）必填字段
 
-| 字段          | 类型             | 说明                                      |
-| ------------- | ---------------- | ----------------------------------------- |
-| `name`        | string           | 名称                                      |
-| `lat`         | number           | 纬度（GCJ-02，系统自动转 WGS-84）         |
-| `lon`         | number           | 经度（GCJ-02，系统自动转 WGS-84）         |
-| `address`     | string           | 地址                                      |
-| `description` | string           | 描述（无内容可填 `""` 或 `"/"` 等占位符） |
-| `zipcode`     | number           | 邮政编码                                  |
-| `format`      | string \| number | 信箱形态，见下表                          |
+| 字段          | 类型             | 说明                                    |
+| ------------- | ---------------- | --------------------------------------- |
+| `name`        | string           | 名称                                    |
+| `lat`         | number           | 纬度（默认 WGS-84，见 `coordSystem`）   |
+| `lon`         | number           | 经度（默认 WGS-84，见 `coordSystem`）   |
+| `address`     | string           | 地址                                    |
+| `description` | string           | 描述（必填，无内容可填 `"/"` 等占位符） |
+| `zipcode`     | string \| number | 邮政编码（3–10 位数字，保留前导零）     |
+| `format`      | string \| number | 信箱形态，见下表                        |
 
 #### 可选字段
 
-| 字段           | 类型               | 说明                                          |
-| -------------- | ------------------ | --------------------------------------------- |
-| `type`         | string             | `"mailbox"`（默认）或 `"kiosk"`               |
-| `user`         | string             | 录入者邮箱（必填，需为合法邮箱格式）          |
-| `status`       | string \| number   | 状态，见下表，默认 `"normal"`                 |
-| `pickupTime`   | string             | 开取时间，如 `"周一至周日，每天15:00、17:30"` |
-| `station`      | string             | 责任部门/所属支局                             |
-| `PostmarkText` | string             | 邮戳文字（也可用 `stamp` 字段）               |
-| `pictures`     | string[] \| string | 图片 URL 数组，或以换行分隔的字符串           |
+| 字段           | 类型               | 说明                                                        |
+| -------------- | ------------------ | ----------------------------------------------------------- |
+| `type`         | string             | `"mailbox"`（默认）或 `"kiosk"`                             |
+| `user`         | string             | 录入者邮箱（必填，需为合法邮箱格式）                        |
+| `coordSystem`  | string             | `"wgs84"`（默认）或 `"gcj02"`（高德/腾讯坐标，转为 WGS-84） |
+| `status`       | string \| number   | 状态，见下表，默认 `"normal"`；无效值报错                   |
+| `pickupTime`   | string             | 开取时间，如 `"周一至周日，每天15:00、17:30"`               |
+| `station`      | string             | 责任部门/所属支局                                           |
+| `PostmarkText` | string             | 邮戳文字（也可用 `stamp` 字段）                             |
+| `pictures`     | string[] \| string | 图片 URL 数组，或以换行分隔的字符串                         |
 
 > 当 `type` 为 `"kiosk"` 时：`address`、`zipcode`、`format`、`pickupTime`、`station`、`PostmarkText` 均可忽略，但 `pictures` 为必填。
 
@@ -104,7 +110,7 @@ Content-Type: application/json
     "address": "江苏省徐州市泉山区永安街道建国西路92号7楼邮电大楼",
     "description": "业务较为熟练",
     "user": "user@example.com",
-    "zipcode": 221006,
+    "zipcode": "221006",
     "pickupTime": "周一至周日，每天15：00、17：30",
     "station": "永安邮政支局",
     "PostmarkText": "江苏徐州 永安",
@@ -117,9 +123,9 @@ Content-Type: application/json
     "lat": 34.265325,
     "lon": 117.191912,
     "address": "江苏省徐州市鼓楼区黄楼街道淮海东路7号",
-    "description": "",
+    "description": "/",
     "user": "user@example.com",
-    "zipcode": 221005,
+    "zipcode": "221005",
     "pickupTime": "周一至周日，每天15：00、17：00",
     "station": "东站邮政支局",
     "PostmarkText": "江苏徐州 东站",

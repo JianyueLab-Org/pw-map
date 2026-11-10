@@ -25,3 +25,4 @@ logs
 
 app/generated/prisma
 prisma/generated
+.temp/
