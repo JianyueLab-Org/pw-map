@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>全国邮政邮筒（箱）点位数据 · 公开信息汇总</title>
+<meta name="description" content="汇总各省级、地市级邮政管理局及邮政分公司主动公开的邮筒（箱）点位信息，按省级 / 地级 / 县级行政区划逐级展开检索。">
+<style>
+  :root{
+    --green:#0f7a4d; --green-d:#0a5c39; --green-l:#e8f5ee;
+    --ink:#16211b; --ink-2:#496057; --ink-3:#7f9187;
+    --line:#dde7e1; --line-2:#eef4f0; --bg:#f6f9f7; --card:#fff;
+    --radius:12px;
+    --shadow:0 1px 2px rgba(16,40,30,.05),0 8px 24px -12px rgba(16,40,30,.18);
+  }
+  *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    margin:0; background:var(--bg); color:var(--ink);
+    font:15px/1.65 "PingFang SC","Microsoft YaHei","Hiragino Sans GB",-apple-system,"Segoe UI",Roboto,sans-serif;
+    font-variant-numeric:tabular-nums;
+  }
+  a{color:var(--green-d);text-decoration:none}
+  a:hover{text-decoration:underline}
+  .wrap{max-width:1400px;margin:0 auto;padding:0 20px}
+
+  /* ---------- hero ---------- */
+  header.hero{
+    background:
+      radial-gradient(900px 240px at 12% -40%,rgba(15,122,77,.22),transparent 60%),
+      linear-gradient(180deg,#0f7a4d 0%,#0c6a43 100%);
+    color:#fff;padding:30px 0 22px;
+  }
+  .hero h1{margin:0 0 6px;font-size:26px;letter-spacing:.5px;font-weight:700}
+  .hero p.sub{margin:0;color:#cfeadb;font-size:14px;max-width:880px}
+  .stats{display:flex;flex-wrap:wrap;gap:10px;margin-top:18px}
+  .stat{
+    background:rgba(255,255,255,.11); border:1px solid rgba(255,255,255,.18);
+    border-radius:10px;padding:8px 14px;min-width:104px;
+  }
+  .stat b{display:block;font-size:19px;line-height:1.25}
+  .stat span{font-size:12px;color:#cbe7d9}
+
+  /* ---------- toolbar ---------- */
+  .toolbar{position:sticky;top:0;z-index:30;background:rgba(246,249,247,.95);
+    backdrop-filter:blur(8px);border-bottom:1px solid var(--line);padding:10px 0}
+  .filters{display:flex;flex-wrap:wrap;gap:8px;align-items:flex-end}
+  .field{display:flex;flex-direction:column;gap:3px;min-width:0}
+  .field > label{font-size:11px;color:var(--ink-3);padding-left:2px}
+  select,input[type=search]{
+    appearance:none;border:1px solid var(--line);background:#fff;color:var(--ink);
+    border-radius:9px;padding:8px 11px;font-size:14px;height:38px;line-height:20px;
+    font-family:inherit;transition:border-color .15s,box-shadow .15s;
+  }
+  select{background-image:linear-gradient(45deg,transparent 50%,var(--ink-3) 50%),linear-gradient(135deg,var(--ink-3) 50%,transparent 50%);
+    background-position:calc(100% - 15px) 16px,calc(100% - 10px) 16px;
+    background-size:5px 5px,5px 5px;background-repeat:no-repeat;padding-right:30px}
+  select:focus,input:focus{outline:none;border-color:var(--green);box-shadow:0 0 0 3px rgba(15,122,77,.14)}
+  select:disabled{background-color:#f2f5f3;color:var(--ink-3)}
+  .field.search{flex:1 1 220px;min-width:180px}
+  .field.search input{width:100%}
+  .btn{
+    border:1px solid var(--line);background:#fff;color:var(--ink-2);border-radius:9px;
+    padding:8px 13px;font-size:13px;cursor:pointer;height:38px;font-family:inherit;
+    transition:all .15s;white-space:nowrap;
+  }
+  .btn:hover{border-color:var(--green);color:var(--green-d)}
+  .btn.primary{background:var(--green);border-color:var(--green);color:#fff}
+  .btn.primary:hover{background:var(--green-d)}
+  .toolbar-row{display:flex;gap:8px;flex-wrap:wrap;justify-content:space-between;align-items:center;margin-top:8px}
+  .hits{font-size:13px;color:var(--ink-2)}
+  .hits b{font-size:16px;color:var(--green-d)}
+  .chips{display:flex;gap:6px;flex-wrap:wrap}
+
+  /* ---------- table ---------- */
+  main{padding:14px 0 60px}
+  .tips{margin:0 0 10px;font-size:12.5px;color:var(--ink-3)}
+  .tips b{color:var(--green)}
+  .tablebox{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden}
+  .scroll{overflow:auto;max-height:calc(100vh - 210px)}
+  table{width:100%;border-collapse:separate;border-spacing:0;font-size:13.5px}
+  thead th{
+    position:sticky;top:0;z-index:10;background:#f2f7f4;color:var(--ink-2);
+    font-weight:600;text-align:left;font-size:12px;letter-spacing:.3px;
+    padding:10px 10px;border-bottom:1px solid var(--line);white-space:nowrap;
+  }
+  tbody td{padding:9px 10px;border-bottom:1px solid var(--line-2);vertical-align:top}
+  tbody tr.leaf:hover td{background:#fbfefc}
+  td.idx{color:var(--ink-3);font-size:12px;width:44px}
+  td.addr{min-width:240px}
+  td.sched{white-space:nowrap;font-size:12.5px;color:var(--ink-2)}
+  td.note{font-size:12px;color:var(--ink-3);max-width:150px}
+  td.src{white-space:nowrap;font-size:12.5px}
+  .muted{color:var(--ink-3)}
+  .tag{display:inline-block;font-size:11.5px;padding:1px 8px;border-radius:999px;border:1px solid var(--line);background:#fafcfb;color:var(--ink-2);white-space:nowrap}
+  .tag.t-menqian{border-color:#c9e3d6;background:#eef8f2;color:#0b6b43}
+  .tag.t-lidian{border-color:#f0d3ca;background:#fdf0ec;color:#a83b23}
+  .tag.t-box{border-color:#d8dce8;background:#f3f5fb;color:#3d4a70}
+  .sub{display:inline-block;font-size:11px;color:var(--ink-3);margin-left:3px}
+  .rg{font-size:11.5px;color:var(--ink-2);border:1px dashed var(--line);border-radius:6px;padding:0 6px;white-space:nowrap}
+  .maplink{font-size:12px;color:var(--ink-3);white-space:nowrap;margin-left:6px}
+  .maplink:hover{color:var(--green)}
+
+  /* ---------- group rows ---------- */
+  tr.grp td{padding:0;border-bottom:1px solid var(--line)}
+  tr.grp button{
+    width:100%;display:flex;align-items:center;gap:9px;text-align:left;
+    background:#f7fbf9;border:0;border-left:3px solid var(--green);color:var(--ink);
+    padding:9px 12px;font:inherit;font-size:13.5px;cursor:pointer;
+  }
+  tr.grp button:hover{background:#eef7f1}
+  tr.grp.lv2 button{background:#fbfdfc;border-left-color:#8cc3a7;font-weight:500}
+  tr.grp.lv3 button{background:#fff;border-left-color:#cfe3d8;font-weight:400}
+  tr.grp .caret{width:14px;display:inline-block;transition:transform .15s;color:var(--green);font-size:11px}
+  tr.grp.open .caret{transform:rotate(90deg)}
+  tr.grp .gn{font-weight:600;letter-spacing:.3px}
+  tr.grp.lv3 .gn{font-weight:500;color:var(--ink-2)}
+  tr.grp .cnt{font-size:11.5px;color:var(--ink-3);background:#fff;border:1px solid var(--line);border-radius:999px;padding:0 8px}
+  tr.grp .src{font-size:11px;color:var(--ink-3);margin-left:auto}
+
+  .morebar{display:flex;justify-content:center;padding:16px;border-top:1px solid var(--line-2)}
+  .empty{padding:48px 20px;text-align:center;color:var(--ink-3)}
+  .empty b{display:block;font-size:15px;color:var(--ink-2);margin-bottom:4px}
+
+  /* ---------- footer ---------- */
+  footer{border-top:1px solid var(--line);background:#fff;padding:32px 0 48px;font-size:13.5px;color:var(--ink-2)}
+  footer h2{font-size:15px;color:var(--ink);margin:0 0 10px}
+  footer h2:not(:first-child){margin-top:26px}
+  footer ul{margin:0;padding-left:20px}
+  footer li{margin:4px 0}
+  .srctable{width:100%;border-collapse:collapse;font-size:12.5px;margin-top:8px}
+  .srctable th,.srctable td{border-bottom:1px solid var(--line-2);padding:7px 8px;text-align:left;vertical-align:top}
+  .srctable th{color:var(--ink-3);font-weight:500;font-size:11.5px}
+  .warn{background:#fff8ec;border:1px solid #f2dcb3;border-radius:10px;padding:12px 14px;margin-top:12px;color:#7a5a19;font-size:12.5px}
+  details{margin-top:10px;border:1px solid var(--line);border-radius:10px;padding:10px 14px;background:#fbfdfc}
+  summary{cursor:pointer;font-size:13.5px;color:var(--ink);font-weight:500}
+  .toast{
+    position:fixed;left:50%;bottom:26px;transform:translate(-50%,20px);opacity:0;pointer-events:none;
+    background:#16211b;color:#fff;padding:9px 16px;border-radius:9px;font-size:13px;transition:.2s;z-index:99;
+  }
+  .toast.on{opacity:1;transform:translate(-50%,0)}
+
+  @media (max-width:900px){
+    .hero h1{font-size:21px}
+    .scroll{max-height:none}
+    td.note,th.note{display:none}
+  }
+  @media print{
+    .toolbar,.morebar,.maplink{display:none}
+    .scroll{max-height:none;overflow:visible}
+    body{background:#fff}
+  }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap">
+    <h1>全国邮政邮筒（箱）点位数据</h1>
+    <p class="sub">汇总各省级、地市级<b>邮政管理局</b>与<b>邮政分公司</b>主动公开的邮筒（箱）分布信息，按「省 → 市 → 县」逐级下拉展开；每条记录都能回到原始公示。数据来源线索整理自 <a href="https://zh.postal.wiki/" target="_blank" rel="noopener" style="color:#bfe9d4">邮政维基</a> 的《中国邮政邮筒（箱）数据信息目录列表》。</p>
+    <div class="stats" id="stats"></div>
+  </div>
+</header>
+
+<div class="toolbar">
+  <div class="wrap">
+    <div class="filters">
+      <div class="field"><label for="f-prov">省级行政区划</label><select id="f-prov"></select></div>
+      <div class="field"><label for="f-city">地级行政区划</label><select id="f-city" disabled></select></div>
+      <div class="field"><label for="f-county">县级行政区划</label><select id="f-county" disabled></select></div>
+      <div class="field"><label for="f-type">类型</label><select id="f-type"></select></div>
+      <div class="field"><label for="f-sub">筒型</label><select id="f-sub"></select></div>
+      <div class="field search"><label for="f-q">搜索</label><input id="f-q" type="search" placeholder="网点名称 / 地址 / 责任机构" autocomplete="off"></div>
+      <button class="btn" id="btn-reset">重置</button>
+    </div>
+    <div class="toolbar-row">
+      <div class="hits">命中 <b id="hit">0</b> 条 <span class="muted" id="hit-sub"></span></div>
+      <div class="chips">
+        <button class="btn" id="btn-expand">展开全部</button>
+        <button class="btn" id="btn-collapse">折叠全部</button>
+        <button class="btn primary" id="btn-link">复制筛选链接</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<main>
+  <div class="wrap">
+    <p class="tips">点击行首的 <b>▶</b> 逐级展开（省 → 市 → 县 → 点位）；也可以直接用上面的下拉框一跳到底。地址右侧的「地图」按地址或坐标打开高德。</p>
+    <div class="tablebox">
+      <div class="scroll" id="scroll">
+        <table id="tbl">
+          <thead>
+            <tr>
+              <th class="idx">#</th>
+              <th>省级行政区划</th>
+              <th>地级行政区划</th>
+              <th>县级行政区划</th>
+              <th>区域</th>
+              <th>邮筒（箱）名称</th>
+              <th>类型</th>
+              <th>责任机构</th>
+              <th>地址</th>
+              <th>开取频率 / 时间</th>
+              <th class="note">备注</th>
+              <th>来源</th>
+            </tr>
+          </thead>
+          <tbody id="tbody"></tbody>
+        </table>
+        <div class="empty" id="empty" hidden>
+          <b>没有匹配的点位</b>
+          试试放宽筛选条件，或清空搜索词。
+        </div>
+        <div class="morebar" id="morebar" hidden>
+          <button class="btn" id="btn-more">加载更多（剩余 <span id="rest">0</span> 个县区）</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<footer>
+  <div class="wrap">
+    <h2>数据说明</h2>
+    <ul>
+      <li><b>名称一列为什么有的是空的？</b> 有的公示只给"所属网点"或"开取机构名称"，有的干脆只给地址（沈阳、哈尔滨、佛山等离点式清单）。没有名称就留空，用类型＋地址定位，<b>不做臆造</b>。</li>
+      <li><b>责任机构为什么大面积为空？</b> 只有源文件写明维护单位的才填（如河北沧州的揽投部、新疆喀什的分公司）。对云南各地市的表，"所属网点"本身就是该筒箱的维护网点，其名称已经体现在"名称"列，不重复占两栏。</li>
+      <li><b>类型与筒型</b>：「门前」= 设在邮政营业场所门前（普遍服务标配）；「离点式」= 远离营业场所独立设置的"野生邮筒"。「筒型」是子类：立式 / 悬挂式（其下再细分邮筒、邮箱时，类型列写成「邮筒·立式」这样的组合）。新疆喀什的表只分邮筒 / 邮箱、不区分门前与离点式，原样保留。</li>
+      <li><b>区域</b>：源文件标注了设置区域（城市 / 乡镇驻地 / 行政村 / 农村 / 景区）的才填，统一写成城区 / 乡镇 / 乡村 / 景区；未标注的留空。</li>
+      <li><b>邮编</b>写在地址后面，不单占一列。</li>
+      <li><b>坐标</b>只在新疆喀什的 XLSX 附件里有，页面上不展示；结构化 JSON 里保留了经纬度，供导入地图时使用。</li>
+      <li><b>芜湖（117 条）是人工转录</b>：源文件为三张表格截图（原始仅 420px 宽），已逐行对图抄录；原文里"江坝坝"这类重复字照原文保留。仍有少量字符受图源清晰度限制，建议与原件比对。</li>
+    </ul>
+
+    <h2>原文疑点清单</h2>
+    <p style="margin:0 0 6px">下面这些是<b>公示文件自己写错、写重或不一致</b>的地方。我们一律照抄，没有替它们"修正"——因为改了就成了我们编的。</p>
+    <details>
+      <summary>展开（<span id="quirk-count">0</span> 条）</summary>
+      <table class="srctable" id="quirktable"></table>
+    </details>
+
+    <h2>还没收进来的</h2>
+    <p style="margin:0 0 6px">下面这些地市在邮政维基的目录里出现过，但公示载体是<b>微信文章里的图片</b>、小红书（需登录）或城市数据平台（依申请公开），拿不到可逐条引用的文字，所以没有收录。</p>
+    <details>
+      <summary>展开清单（<span id="pend-count">0</span> 条）</summary>
+      <table class="srctable" id="pendtable"></table>
+    </details>
+
+    <h2>来源清单</h2>
+    <table class="srctable" id="srctable"></table>
+
+    <h2>使用与免责</h2>
+    <ul>
+      <li>数据版权归各发布机关；本页只做汇总与结构化，每条均标注原始出处链接。</li>
+      <li>筒箱点位随市政建设、道路改造调整，<b>以公示原文与现场标识为准</b>；本页反映的是各文件发布时的状态。</li>
+      <li>「开取频率 / 时间」为文件记载的开箱频次，遇节假日可能调整。</li>
+    </ul>
+  </div>
+</footer>
+
+<div class="toast" id="toast"></div>
+
+<script id="data" type="application/json">null</script>
+<script>
+(function(){
+  "use strict";
+
+  // 数据源：单文件预览版把 JSON 内联在 #data；仓库版为空，改从 data/postboxes.json 取。
+  function boot(PAYLOAD){
+  var ROWS = (PAYLOAD.records || []).map(function(r){
+    return [r.province || '', r.city || '', r.county || '', r.area || '',
+            r.name || '', r.type || '', r.org || '', r.address || '',
+            r.schedule || '', r.note || '', r.source || '',
+            r.lon == null ? '' : String(r.lon), r.lat == null ? '' : String(r.lat)];
+  });
+  var SRC = PAYLOAD.sources || {}, PEND = PAYLOAD.pending || [];
+  var F = {prov:0,city:1,county:2,region:3,name:4,type:5,org:6,addr:7,sched:8,note:9,src:10,lon:11,lat:12};
+
+  function baseOf(t){ var i = (t||'').indexOf('·'); return i < 0 ? (t||'') : t.slice(0, i); }
+  function subOf(t){ var i = (t||'').indexOf('·'); return i < 0 ? '' : t.slice(i+1); }
+
+  // ---------- tree ----------
+  var tree = {}, provOrder = [], baseCount = {}, subCount = {};
+  ROWS.forEach(function(r){
+    var p = r[F.prov], c = r[F.city] || '（市级未标注）', n = r[F.county] || '（县级未标注）';
+    if(!tree[p]){ tree[p] = {}; provOrder.push(p); }
+    if(!tree[p][c]) tree[p][c] = {};
+    if(!tree[p][c][n]) tree[p][c][n] = [];
+    tree[p][c][n].push(r);
+    var b = baseOf(r[F.type]); if(b) baseCount[b] = (baseCount[b]||0)+1;
+    var s = subOf(r[F.type]); if(s) subCount[s] = (subCount[s]||0)+1;
+  });
+
+  var state = {prov:'', city:'', county:'', type:'', sub:'', q:'', expanded:{}};
+  var PAGE = 40, shown = 0;
+
+  function el(id){ return document.getElementById(id); }
+  function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,function(c){
+    return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+  function opt(v,label,count,sel){
+    return '<option value="'+esc(v)+'"'+(v===sel?' selected':'')+'>'+esc(label)+(count!=null?'（'+count+'）':'')+'</option>';
+  }
+
+  // ---------- selects ----------
+  function fillProv(){
+    var c = {}; ROWS.forEach(function(r){ c[r[F.prov]] = (c[r[F.prov]]||0)+1; });
+    el('f-prov').innerHTML = opt('', '全部省份', ROWS.length, state.prov) +
+      provOrder.map(function(p){ return opt(p, p, c[p], state.prov); }).join('');
+  }
+  function fillCity(){
+    var sel = el('f-city'), c = {};
+    if(!state.prov){ sel.innerHTML = '<option value="">全部地市</option>'; sel.disabled = true; return; }
+    ROWS.forEach(function(r){ if(r[F.prov]===state.prov){ var k = r[F.city]||'（市级未标注）'; c[k]=(c[k]||0)+1; } });
+    var keys = Object.keys(c), sum = keys.reduce(function(a,k){ return a+c[k]; },0);
+    sel.disabled = false;
+    sel.innerHTML = opt('', '全部地市', sum, state.city) +
+      keys.map(function(k){ return opt(k, k, c[k], state.city); }).join('');
+  }
+  function fillCounty(){
+    var sel = el('f-county'), c = {};
+    if(!state.prov || !state.city){ sel.innerHTML = '<option value="">全部区县</option>'; sel.disabled = true; return; }
+    ROWS.forEach(function(r){
+      if(r[F.prov]===state.prov && (r[F.city]||'（市级未标注）')===state.city){
+        var n = r[F.county]||'（县级未标注）'; c[n]=(c[n]||0)+1; }
+    });
+    var keys = Object.keys(c), sum = keys.reduce(function(a,k){ return a+c[k]; },0);
+    sel.disabled = false;
+    sel.innerHTML = opt('', '全部区县', sum, state.county) +
+      keys.map(function(k){ return opt(k, k, c[k], state.county); }).join('');
+  }
+  function fillType(){
+    var keys = Object.keys(baseCount).sort();
+    el('f-type').innerHTML = opt('', '全部类型', null, state.type) +
+      keys.map(function(k){ return opt(k, k, baseCount[k], state.type); }).join('');
+  }
+  function fillSub(){
+    var keys = Object.keys(subCount).sort();
+    el('f-sub').innerHTML = opt('', '全部筒型', null, state.sub) +
+      keys.map(function(k){ return opt(k, k, subCount[k], state.sub); }).join('');
+  }
+
+  // ---------- filter ----------
+  function match(r){
+    if(state.prov && r[F.prov]!==state.prov) return false;
+    if(state.city && (r[F.city]||'（市级未标注）')!==state.city) return false;
+    if(state.county && (r[F.county]||'（县级未标注）')!==state.county) return false;
+    if(state.type && baseOf(r[F.type])!==state.type) return false;
+    if(state.sub && subOf(r[F.type])!==state.sub) return false;
+    if(state.q){
+      var hay = (r[F.name]+' '+r[F.addr]+' '+r[F.org]+' '+r[F.prov]+' '+r[F.city]+' '+r[F.county]+' '+r[F.note]+' '+r[F.type]).toLowerCase();
+      var toks = state.q.toLowerCase().split(/\s+/).filter(Boolean);
+      for(var i=0;i<toks.length;i++) if(hay.indexOf(toks[i])<0) return false;
+    }
+    return true;
+  }
+
+  function typeCell(t){
+    if(!t) return '<span class="muted">—</span>';
+    var b = baseOf(t), s = subOf(t);
+    var cls = b==='门前'?'t-menqian':(b==='离点式'?'t-lidian':'t-box');
+    return '<span class="tag '+cls+'">'+esc(b)+'</span>' + (s?'<span class="sub">'+esc(s)+'</span>':'');
+  }
+  function srcCell(k){
+    var s = SRC[k];
+    if(!s) return '';
+    return '<a href="'+esc(s.url)+'" target="_blank" rel="noopener" title="'+esc(s.org+'《'+s.title+'》'+s.date+'（'+s.fmt+'）')+'">'+esc(s.label)+'</a>';
+  }
+  function mapLink(r){
+    if(r[F.lon] && r[F.lat]){
+      return '<a class="maplink" target="_blank" rel="noopener" href="https://uri.amap.com/marker?position='+encodeURIComponent(r[F.lon]).replace(/%2C/g,',')+','+encodeURIComponent(r[F.lat])+'&name='+encodeURIComponent(r[F.name]||'邮筒')+'">地图</a>';
+    }
+    return '<a class="maplink" target="_blank" rel="noopener" href="https://ditu.amap.com/search?query='+encodeURIComponent(r[F.addr])+'">地图</a>';
+  }
+
+  // ---------- render ----------
+  var seq = 0;
+  function leafRow(r){
+    seq++;
+    return '<tr class="leaf">'+
+      '<td class="idx">'+seq+'</td>'+
+      '<td>'+esc(r[F.prov])+'</td>'+
+      '<td>'+esc(r[F.city])+'</td>'+
+      '<td>'+esc(r[F.county])+'</td>'+
+      '<td>'+(r[F.region]?'<span class="rg">'+esc(r[F.region])+'</span>':'')+'</td>'+
+      '<td>'+(r[F.name]?esc(r[F.name]):'<span class="muted">—</span>')+'</td>'+
+      '<td>'+typeCell(r[F.type])+'</td>'+
+      '<td>'+(r[F.org]?esc(r[F.org]):'<span class="muted">—</span>')+'</td>'+
+      '<td class="addr">'+esc(r[F.addr])+mapLink(r)+'</td>'+
+      '<td class="sched">'+(r[F.sched]?esc(r[F.sched]):'')+'</td>'+
+      '<td class="note">'+(r[F.note]?esc(r[F.note]):'')+'</td>'+
+      '<td class="src">'+srcCell(r[F.src])+'</td>'+
+    '</tr>';
+  }
+  function grpRow(lv, key, label, count, open){
+    return '<tr class="grp lv'+lv+(open?' open':'')+'" data-key="'+esc(key)+'">'+
+      '<td colspan="12"><button type="button" aria-expanded="'+(open?'true':'false')+'">'+
+        '<span class="caret">▶</span><span class="gn" style="padding-left:'+((lv-1)*14)+'px">'+esc(label)+'</span>'+
+        '<span class="cnt">'+count+'</span>'+
+      '</button></td></tr>';
+  }
+
+  function render(){
+    var out = [], blocks = 0, restBlocks = 0, total = 0;
+    seq = 0;
+
+    var ft = {}, fOrder = [];
+    ROWS.forEach(function(r){
+      if(!match(r)) return;
+      var p = r[F.prov], c = r[F.city]||'（市级未标注）', n = r[F.county]||'（县级未标注）';
+      if(!ft[p]){ ft[p] = {}; fOrder.push(p); }
+      if(!ft[p][c]) ft[p][c] = {};
+      if(!ft[p][c][n]) ft[p][c][n] = [];
+      ft[p][c][n].push(r);
+      total++;
+    });
+
+    var autoOpen = !!(state.q || state.type || state.sub);
+    fOrder.forEach(function(p){
+      var cityKeys = Object.keys(ft[p]), pc = 0;
+      cityKeys.forEach(function(c){ Object.keys(ft[p][c]).forEach(function(n){ pc += ft[p][c][n].length; }); });
+      var pKey = 'P|'+p, pOpen = autoOpen || !!state.prov || !!state.expanded[pKey];
+      out.push(grpRow(1, pKey, p, pc, pOpen));
+      if(!pOpen) return;
+
+      cityKeys.forEach(function(c){
+        var countyKeys = Object.keys(ft[p][c]), rc = 0;
+        countyKeys.forEach(function(n){ rc += ft[p][c][n].length; });
+        var cKey = 'C|'+p+'|'+c;
+        var cOpen = autoOpen || !!state.city || !!state.expanded[cKey];
+        if(countyKeys.length === 1 && cOpen){
+          out.push(grpRow(2, cKey, c, rc, true));
+          ft[p][c][countyKeys[0]].forEach(function(r){ out.push(leafRow(r)); });
+          blocks++;
+          return;
+        }
+        out.push(grpRow(2, cKey, c, rc, cOpen));
+        if(!cOpen) return;
+
+        countyKeys.forEach(function(n){
+          var list = ft[p][c][n];
+          var nKey = 'N|'+p+'|'+c+'|'+n;
+          var nOpen = autoOpen || !!state.county || !!state.expanded[nKey] ||
+                      (list.length <= 8 && (!!state.city || !!state.expanded[cKey]));
+          if(blocks >= shown){ restBlocks++; return; }
+          out.push(grpRow(3, nKey, n, list.length, nOpen));
+          if(nOpen) list.forEach(function(r){ out.push(leafRow(r)); });
+          blocks++;
+        });
+      });
+    });
+
+    el('tbody').innerHTML = out.join('');
+    el('hit').textContent = total;
+    el('hit-sub').textContent = total === ROWS.length ? '· 全量 ' + ROWS.length + ' 条' : '· 共 ' + ROWS.length + ' 条';
+    el('empty').hidden = total > 0;
+    el('morebar').hidden = restBlocks === 0;
+    el('rest').textContent = restBlocks;
+  }
+
+  // ---------- events ----------
+  el('tbody').addEventListener('click', function(e){
+    var btn = e.target.closest('tr.grp button');
+    if(!btn) return;
+    var tr = btn.closest('tr'), key = tr.getAttribute('data-key');
+    if(state.expanded[key]) delete state.expanded[key]; else state.expanded[key] = 1;
+    render();
+  });
+  el('f-prov').addEventListener('change', function(){
+    state.prov = this.value; state.city = ''; state.county = '';
+    fillCity(); fillCounty(); syncUrl(); render();
+  });
+  el('f-city').addEventListener('change', function(){
+    state.city = this.value; state.county = '';
+    if(state.city) state.expanded['P|'+state.prov] = 1;
+    fillCounty(); syncUrl(); render();
+  });
+  el('f-county').addEventListener('change', function(){
+    state.county = this.value;
+    if(state.county){ state.expanded['P|'+state.prov]=1; state.expanded['C|'+state.prov+'|'+state.city]=1; }
+    syncUrl(); render();
+  });
+  el('f-type').addEventListener('change', function(){ state.type = this.value; syncUrl(); render(); });
+  el('f-sub').addEventListener('change', function(){ state.sub = this.value; syncUrl(); render(); });
+  var qt;
+  el('f-q').addEventListener('input', function(){
+    var v = this.value.trim();
+    clearTimeout(qt); qt = setTimeout(function(){ state.q = v; syncUrl(); render(); }, 180);
+  });
+  el('btn-reset').addEventListener('click', function(){
+    state = {prov:'', city:'', county:'', type:'', sub:'', q:'', expanded:{}};
+    el('f-q').value = ''; fillProv(); fillCity(); fillCounty(); fillType(); fillSub(); syncUrl(); render();
+  });
+  el('btn-expand').addEventListener('click', function(){
+    provOrder.forEach(function(p){
+      state.expanded['P|'+p] = 1;
+      Object.keys(tree[p]).forEach(function(c){
+        state.expanded['C|'+p+'|'+c] = 1;
+        Object.keys(tree[p][c]).forEach(function(n){ state.expanded['N|'+p+'|'+c+'|'+n] = 1; });
+      });
+    });
+    shown = 100000; render();
+  });
+  el('btn-collapse').addEventListener('click', function(){
+    state.expanded = {}; shown = PAGE; render();
+    el('scroll').scrollTop = 0;
+  });
+  el('btn-more').addEventListener('click', function(){ shown += PAGE; render(); });
+
+  // ---------- url ----------
+  function syncUrl(){
+    var u = new URL(location.href), q = u.searchParams;
+    [['p','prov'],['c','city'],['n','county'],['t','type'],['s','sub'],['q','q']].forEach(function(kv){
+      if(state[kv[1]]) q.set(kv[0], state[kv[1]]); else q.delete(kv[0]);
+    });
+    history.replaceState(null, '', u.pathname + (q.toString()?'?'+q:'') + u.hash);
+  }
+  el('btn-link').addEventListener('click', function(){
+    syncUrl();
+    var url = location.href;
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(url).then(function(){ toast('筛选链接已复制'); }, function(){ toast(url); });
+    } else { toast(url); }
+  });
+  function readUrl(){
+    var q = new URLSearchParams(location.search);
+    state.prov = q.get('p') || ''; state.city = q.get('c') || ''; state.county = q.get('n') || '';
+    state.type = q.get('t') || ''; state.sub = q.get('s') || ''; state.q = q.get('q') || '';
+    el('f-q').value = state.q;
+  }
+
+  var tt;
+  function toast(msg){
+    var t = el('toast'); t.textContent = msg; t.classList.add('on');
+    clearTimeout(tt); tt = setTimeout(function(){ t.classList.remove('on'); }, 2200);
+  }
+
+  // ---------- init ----------
+  readUrl();
+  fillProv(); fillCity(); fillCounty(); fillType(); fillSub();
+
+  var cityCount = 0, countySet = {}, usedSrc = {};
+  Object.keys(tree).forEach(function(p){ cityCount += Object.keys(tree[p]).length; });
+  ROWS.forEach(function(r){
+    countySet[r[F.prov]+'|'+r[F.city]+'|'+r[F.county]] = 1;
+    usedSrc[r[F.src]] = 1;
+  });
+  el('stats').innerHTML = [
+    ['点位总数', ROWS.length.toLocaleString() + ' 条'],
+    ['覆盖省级行政区', Object.keys(tree).length + ' 个'],
+    ['覆盖地级城市', cityCount + ' 个'],
+    ['覆盖县级区划', Object.keys(countySet).length + ' 个'],
+    ['来源文件', Object.keys(usedSrc).length + ' 份']
+  ].map(function(x){ return '<div class="stat"><b>'+x[1]+'</b><span>'+x[0]+'</span></div>'; }).join('');
+
+  var st = ['<tr><th>信息来源</th><th>发布机构</th><th>文件 / 页面</th><th>发布</th><th>载体</th><th>条数</th><th>链接</th></tr>'];
+  Object.keys(SRC).forEach(function(k){
+    var s = SRC[k], n = ROWS.filter(function(r){ return r[F.src]===k; }).length;
+    st.push('<tr><td>'+esc(s.label)+'</td><td>'+esc(s.org)+'</td><td>'+esc(s.title)+'</td><td>'+esc(s.date)+'</td><td>'+esc(s.fmt)+'</td><td>'+(n||'—')+'</td><td><a href="'+esc(s.url)+'" target="_blank" rel="noopener">原页</a></td></tr>');
+  });
+  el('srctable').innerHTML = st.join('');
+
+  var pt = ['<tr><th>省级</th><th>地级</th><th>来源情况</th><th>链接</th></tr>'];
+  PEND.forEach(function(x){
+    pt.push('<tr><td>'+esc(x[0])+'</td><td>'+esc(x[1])+'</td><td>'+esc(x[2])+'</td><td><a href="'+esc(x[3])+'" target="_blank" rel="noopener">原页</a></td></tr>');
+  });
+  el('pendtable').innerHTML = pt.join('');
+  el('pend-count').textContent = PEND.length;
+
+  var QK = PAYLOAD.quirks || [];
+  var qt = ['<tr><th>省级</th><th>地级</th><th>原文情况</th></tr>'];
+  QK.forEach(function(x){ qt.push('<tr><td>'+esc(x[0])+'</td><td>'+esc(x[1])+'</td><td>'+esc(x[2])+'</td></tr>'); });
+  el('quirktable').innerHTML = qt.join('');
+  el('quirk-count').textContent = QK.length;
+
+  shown = PAGE;
+  render();
+  if(state.prov || state.q || state.type || state.sub){ shown = 100000; render(); }
+  }
+
+  // ---------- 数据装载 ----------
+  function fail(msg, hint){
+    var box = document.getElementById('empty');
+    box.hidden = false;
+    box.innerHTML = '<b>数据没加载出来</b>' + esc(msg) +
+      '<div style="margin-top:10px;font-size:12.5px">' + hint + '</div>';
+    document.getElementById('hit').textContent = '0';
+  }
+  function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,function(c){
+    return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+
+  var inline = (document.getElementById('data').textContent || '').trim();
+  if (inline && inline !== 'null') {
+    try { boot(JSON.parse(inline)); }
+    catch (e) { fail('内联数据解析失败：' + e.message, ''); }
+  } else {
+    fetch('data/postboxes.json', { cache: 'no-store' })
+      .then(function(r){
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        return r.json();
+      })
+      .then(boot)
+      .catch(function(e){
+        fail(e.message, '这个页面需要同目录下的 <code>data/postboxes.json</code>，' +
+          '并且要通过网页服务器打开（<code>file://</code> 直开会因浏览器安全策略被拦）。' +
+          '想直接双击看的话，用「单文件预览版」。');
+      });
+  }
+})();
+</script>
+</body>
+</html>
