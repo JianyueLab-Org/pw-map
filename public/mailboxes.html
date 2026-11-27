@@ -178,10 +178,18 @@
   .copy a:hover{color:var(--green)}
 
   @media (max-width:900px){
+    .toolbar{position:static}
+    .filters{gap:6px}
+    .field.combo{width:calc(50% - 3px)}
+    .filters > .field:not(.combo):not(.search){width:calc(50% - 3px)}
+    .field.search{flex:1 1 100%;min-width:0}
+    .cb-in{height:34px;font-size:13px;padding:6px 22px 6px 9px}
+    .filters > .field:not(.combo):not(.search) select{height:34px;font-size:13px}
     .hero h1{font-size:21px}
     .scroll{max-height:none}
     td.note,th.note{display:none}
   }
+
   @media print{
     .toolbar,.morebar,.maplink{display:none}
     .scroll{max-height:none;overflow:visible}
@@ -205,7 +213,7 @@
       <div class="field combo" id="cb-prov">
         <label for="cb-prov-in">省级行政区划</label>
         <div class="cbwrap">
-          <input id="cb-prov-in" class="cb-in" type="text" readonly autocomplete="off" placeholder="全部省份">
+          <input id="cb-prov-in" class="cb-in" type="text" readonly autocomplete="off" placeholder="全部（省份）">
           <b class="cb-ar">▾</b>
           <div class="cb-pop" hidden>
             <input class="cb-q" type="text" placeholder="输入筛选…" autocomplete="off">
@@ -216,7 +224,7 @@
       <div class="field combo" id="cb-city">
         <label for="cb-city-in">地级行政区划</label>
         <div class="cbwrap">
-          <input id="cb-city-in" class="cb-in" type="text" readonly autocomplete="off" placeholder="全部地市">
+          <input id="cb-city-in" class="cb-in" type="text" readonly autocomplete="off" placeholder="全部（地市）">
           <b class="cb-ar">▾</b>
           <div class="cb-pop" hidden>
             <input class="cb-q" type="text" placeholder="输入筛选…" autocomplete="off">
@@ -227,7 +235,7 @@
       <div class="field combo" id="cb-county">
         <label for="cb-county-in">县级行政区划</label>
         <div class="cbwrap">
-          <input id="cb-county-in" class="cb-in" type="text" readonly autocomplete="off" placeholder="全部区县">
+          <input id="cb-county-in" class="cb-in" type="text" readonly autocomplete="off" placeholder="全部（区县）">
           <b class="cb-ar">▾</b>
           <div class="cb-pop" hidden>
             <input class="cb-q" type="text" placeholder="输入筛选…" autocomplete="off">
@@ -235,18 +243,46 @@
           </div>
         </div>
       </div>
-      <div class="field combo" id="cb-region" hidden>
+      <div class="field combo" id="cb-region">
         <label for="cb-region-in">区域</label>
         <div class="cbwrap">
-          <input id="cb-region-in" class="cb-in" type="text" readonly autocomplete="off" placeholder="全部区域">
+          <input id="cb-region-in" class="cb-in" type="text" readonly autocomplete="off" placeholder="全部（区域）">
           <b class="cb-ar">▾</b>
           <div class="cb-pop" hidden>
             <div class="cb-list"></div>
           </div>
         </div>
       </div>
-      <div class="field"><label for="f-type">类型</label><select id="f-type"></select></div>
-      <div class="field"><label for="f-sub">式样</label><select id="f-sub"></select></div>
+      <div class="field combo" id="cb-type">
+        <label for="cb-type-in">类型</label>
+        <div class="cbwrap">
+          <input id="cb-type-in" class="cb-in" type="text" readonly autocomplete="off" placeholder="全部（类型）">
+          <b class="cb-ar">▾</b>
+          <div class="cb-pop" hidden>
+            <div class="cb-list"></div>
+          </div>
+        </div>
+      </div>
+      <div class="field combo" id="cb-kind">
+        <label for="cb-kind-in">式样</label>
+        <div class="cbwrap">
+          <input id="cb-kind-in" class="cb-in" type="text" readonly autocomplete="off" placeholder="全部（式样）">
+          <b class="cb-ar">▾</b>
+          <div class="cb-pop" hidden>
+            <div class="cb-list"></div>
+          </div>
+        </div>
+      </div>
+      <div class="field combo" id="cb-form">
+        <label for="cb-form-in">形态</label>
+        <div class="cbwrap">
+          <input id="cb-form-in" class="cb-in" type="text" readonly autocomplete="off" placeholder="全部（形态）">
+          <b class="cb-ar">▾</b>
+          <div class="cb-pop" hidden>
+            <div class="cb-list"></div>
+          </div>
+        </div>
+      </div>
       <div class="field search"><label for="f-q">搜索</label><input id="f-q" type="search" placeholder="网点名称 / 地址 / 责任机构" autocomplete="off"></div>
       <button class="btn" id="btn-reset">重置</button>
     </div>
@@ -370,7 +406,7 @@
     var s = subOf(r[F.type]); if(s) subCount[s] = (subCount[s]||0)+1;
   });
 
-  var state = {prov:'', city:'', county:'', type:'', sub:'', region:'', q:'', expanded:{}};
+  var state = {prov:'', city:'', county:'', region:'', place:'', kind:'', form:'', q:'', expanded:{}};
   var PAGE = 40, shown = 0;
 
   function el(id){ return document.getElementById(id); }
@@ -380,13 +416,12 @@
     return '<option value="'+esc(v)+'"'+(v===sel?' selected':'')+'>'+esc(label)+(count!=null?'（'+count+'）':'')+'</option>';
   }
 
-  // ---------- 可搜索下拉（省 / 市 / 县 / 区域） ----------
+  // ---------- 可搜索下拉（省/市/县带搜索，区域/类型/式样/形态不带） ----------
   var COMBO = {};
   function mkCombo(id, onPick){
     var root = el(id), inp = root.querySelector('.cb-in'), pop = root.querySelector('.cb-pop'),
         q = root.querySelector('.cb-q'), list = root.querySelector('.cb-list'),
         arrow = root.querySelector('.cb-ar');
-    // 区域下拉不带搜索框（选项就四五项），没有 .cb-q 时用个空壳占位
     if(!q) q = { value: '', focus: function(){}, addEventListener: function(){} };
     var items = [], sel = '', opened = false;
     function labelOf(v){
@@ -422,13 +457,8 @@
     return {
       set: function(arr, cur, disabled){
         items = arr; sel = cur || '';
-        if(disabled){
-          root.setAttribute('disabled', '');
-          inp.value = ''; inp.placeholder = '无可选项';
-        }else{
-          root.removeAttribute('disabled');
-          inp.value = labelOf(sel);
-        }
+        if(disabled){ root.setAttribute('disabled', ''); inp.value = ''; inp.placeholder = '无可选项'; }
+        else { root.removeAttribute('disabled'); inp.value = labelOf(sel); }
         if(opened) paint();
       }
     };
@@ -436,32 +466,39 @@
   function cityOf(r){ return r[F.city] || '（市级未标注）'; }
   function countyOf(r){ return r[F.county] || '（县级未标注）'; }
 
+  // ---------- 类型拆成三个维度 ----------
+  var PLACES = ['门前', '离点式'], KINDS = ['邮筒', '邮箱'], FORMS = ['立式', '悬挂式'];
+  function parseType(t){
+    var o = { place: '', kind: '', form: '' };
+    String(t || '').split('·').forEach(function(p){
+      p = p.trim();
+      if(PLACES.indexOf(p) >= 0) o.place = p;
+      else if(KINDS.indexOf(p) >= 0) o.kind = p;
+      else if(FORMS.indexOf(p) >= 0) o.form = p;
+    });
+    return o;
+  }
+  var TSPLIT = ROWS.map(function(r){ return parseType(r[F.type]); });
+  ROWS.forEach(function(r, i){ r._ts = TSPLIT[i]; });
+
   function fillProv(){
     var c = {}, n = 0;
     ROWS.forEach(function(r){ var k = r[F.prov]; if(!k) return; c[k] = (c[k]||0)+1; n++; });
-    var items = [{v:'', label:'全部省份（' + n + '）', count:null}];
+    var items = [{v:'', label:'全部（' + n.toLocaleString() + '）', count:null}];
     provOrder.forEach(function(p){ items.push({v:p, label:p, count:c[p]||0}); });
     COMBO.prov.set(items, state.prov, false);
   }
   function fillCity(){
     var base = ROWS.filter(function(r){ return !state.prov || r[F.prov] === state.prov; });
     var c = {}, order = [];
-    base.forEach(function(r){
-      var k = cityOf(r);
-      if(!c[k]){ c[k] = 0; order.push(k); }
-      c[k]++;
-    });
-    var n = base.length, items = [{v:'', label:'全部地市（' + n + '）', count:null}];
+    base.forEach(function(r){ var k = cityOf(r); if(!c[k]){ c[k] = 0; order.push(k); } c[k]++; });
+    var items = [{v:'', label:'全部（' + base.length.toLocaleString() + '）', count:null}];
     order.forEach(function(k){
       var r0 = null;
       for(var i = 0; i < base.length; i++) if(cityOf(base[i]) === k){ r0 = base[i]; break; }
       items.push({v:k, label:k, count:c[k], prov:r0 ? r0[F.prov] : ''});
     });
-    if(order.length === 1){            // 直辖市：地级只有一个，直接选定，不留「全部地市」
-      state.city = order[0];
-      COMBO.city.set([items[1]], state.city, false);
-      return;
-    }
+    if(order.length === 1){ state.city = order[0]; COMBO.city.set([items[1]], state.city, false); return; }
     COMBO.city.set(items, state.city, false);
   }
   function fillCounty(){
@@ -471,21 +508,16 @@
       return true;
     });
     var c = {}, order = [];
-    base.forEach(function(r){
-      var k = countyOf(r);
-      if(!c[k]){ c[k] = 0; order.push(k); }
-      c[k]++;
-    });
-    var items = [{v:'', label:'全部区县（' + base.length + '）', count:null}];
+    base.forEach(function(r){ var k = countyOf(r); if(!c[k]){ c[k] = 0; order.push(k); } c[k]++; });
+    var items = [{v:'', label:'全部（' + base.length.toLocaleString() + '）', count:null}];
     order.forEach(function(k){
       var r0 = null;
       for(var i = 0; i < base.length; i++) if(countyOf(base[i]) === k){ r0 = base[i]; break; }
-      var lab = state.city ? k : (cityOf(r0) + ' · ' + k);   // 没选城市时带上城市名，避免重名
-      items.push({v:k, label:lab, count:c[k], prov:r0 ? r0[F.prov] : '', city:r0 ? cityOf(r0) : ''});
+      items.push({v:k, label:(state.city ? k : cityOf(r0) + ' · ' + k), count:c[k],
+                  prov:r0 ? r0[F.prov] : '', city:r0 ? cityOf(r0) : ''});
     });
     COMBO.county.set(items, state.county, items.length <= 1);
   }
-  // 区域：只有当前区划范围内确实有区域数据时才出现
   function fillRegion(){
     var c = {}, n = 0;
     ROWS.forEach(function(r){
@@ -493,22 +525,48 @@
       if(state.city && cityOf(r) !== state.city) return;
       if(state.county && countyOf(r) !== state.county) return;
       if(!qMatch(r)) return;
-      var g = r[F.region];
-      if(!g) return;
-      c[g] = (c[g]||0)+1; n++;
+      if(!r[F.region]) return;
+      c[r[F.region]] = (c[r[F.region]]||0)+1; n++;
     });
     var keys = Object.keys(c).sort(), root = el('cb-region');
-    if(!keys.length){
-      root.hidden = true; state.region = '';
-      COMBO.region.set([], '', true);
-      return;
-    }
+    if(!keys.length){ root.hidden = true; state.region = ''; COMBO.region.set([], '', true); return; }
     root.hidden = false;
-    var items = [{v:'', label:'全部区域（' + n + '）', count:null}];
+    var items = [{v:'', label:'全部（' + n.toLocaleString() + '）', count:null}];
     keys.forEach(function(k){ items.push({v:k, label:k, count:c[k]}); });
     COMBO.region.set(items, state.region, keys.length <= 1);
   }
-  // 类型 / 式样：条数跟着省·市·县·区域·搜索词变；只剩一个选项时直接置灰
+
+  // 三个类型维度按同一套分面计数（各自忽略自己那一维）
+  function facetDim(dim){
+    var c = {}, n = 0;
+    ROWS.forEach(function(r){
+      if(state.prov && r[F.prov] !== state.prov) return;
+      if(state.city && cityOf(r) !== state.city) return;
+      if(state.county && countyOf(r) !== state.county) return;
+      if(state.region && r[F.region] !== state.region) return;
+      if(!qMatch(r)) return;
+      var ts = r._ts;
+      if(dim !== 'place' && state.place && ts.place !== state.place) return;
+      if(dim !== 'kind' && state.kind && ts.kind !== state.kind) return;
+      if(dim !== 'form' && state.form && ts.form !== state.form) return;
+      n++;
+      if(ts[dim]) c[ts[dim]] = (c[ts[dim]]||0)+1;
+    });
+    return {c:c, n:n};
+  }
+  function fillDim(dim, comboId, values, title){
+    var f = facetDim(dim), items = [{v:'', label:'全部（' + f.n.toLocaleString() + '）', count:null}];
+    values.forEach(function(v){
+      if(f.c[v]) items.push({v:v, label:v, count:f.c[v]});
+    });
+    var keys = Object.keys(f.c);
+    COMBO[comboId].set(items, state[dim], keys.length <= 1);
+  }
+  function fillDims(){
+    fillDim('place', 'type', PLACES);
+    fillDim('kind', 'kind', KINDS);
+    fillDim('form', 'form', FORMS);
+  }
   function qMatch(r){
     if(!state.q) return true;
     var hay = (r[F.name]+' '+r[F.addr]+' '+r[F.org]+' '+r[F.prov]+' '+r[F.city]+' '+r[F.county]+' '+r[F.note]+' '+r[F.type]).toLowerCase();
@@ -516,37 +574,20 @@
     for(var i=0;i<toks.length;i++) if(hay.indexOf(toks[i])<0) return false;
     return true;
   }
-  function facet(ignoreType, ignoreSub){
-    var out = {base:{}, sub:{}, n:0};
-    ROWS.forEach(function(r){
-      if(state.prov && r[F.prov]!==state.prov) return;
-      if(state.city && cityOf(r)!==state.city) return;
-      if(state.county && countyOf(r)!==state.county) return;
-      if(!ignoreType && state.type && baseOf(r[F.type])!==state.type) return;
-      if(!ignoreSub && state.sub && subOf(r[F.type])!==state.sub) return;
-      if(state.region && r[F.region]!==state.region) return;
-      if(!qMatch(r)) return;
-      out.n++;
-      var b = baseOf(r[F.type]); if(b) out.base[b] = (out.base[b]||0)+1;
-      var s = subOf(r[F.type]); if(s) out.sub[s] = (out.sub[s]||0)+1;
-    });
-    return out;
+  function pass(r){
+    if(state.prov && r[F.prov] !== state.prov) return false;
+    if(state.city && cityOf(r) !== state.city) return false;
+    if(state.county && countyOf(r) !== state.county) return false;
+    if(state.region && r[F.region] !== state.region) return false;
+    var ts = r._ts;
+    if(state.place && ts.place !== state.place) return false;
+    if(state.kind && ts.kind !== state.kind) return false;
+    if(state.form && ts.form !== state.form) return false;
+    if(!qMatch(r)) return false;
+    return true;
   }
-  function fillType(){
-    var f = facet(true, false), keys = Object.keys(f.base).sort(), sel = el('f-type');
-    sel.innerHTML = opt('', '全部类型（' + f.n + '）', null, state.type) +
-      keys.map(function(k){ return opt(k, k, f.base[k], state.type); }).join('');
-    sel.disabled = keys.length <= 1;      // 只剩一种就没得选，置灰
-  }
-  function fillSub(){
-    var f = facet(false, true), keys = Object.keys(f.sub).sort(), sel = el('f-sub');
-    sel.innerHTML = opt('', '全部式样（' + f.n + '）', null, state.sub) +
-      keys.map(function(k){ return opt(k, k, f.sub[k], state.sub); }).join('');
-    sel.disabled = keys.length <= 1;
-  }
-  function fillTypes(){ fillType(); fillSub(); }
   function refreshAll(){
-    fillProv(); fillCity(); fillCounty(); fillRegion(); fillTypes(); syncUrl(); render();
+    fillProv(); fillCity(); fillCounty(); fillRegion(); fillDims(); syncUrl(); render();
   }
   function initCombos(){
     COMBO.prov = mkCombo('cb-prov', function(it){
@@ -554,37 +595,36 @@
     });
     COMBO.city = mkCombo('cb-city', function(it){
       state.city = it.v; state.county = ''; state.region = '';
-      if(it.prov) state.prov = it.prov;      // 没选省也能直接选市，省自动补上
+      if(it.prov) state.prov = it.prov;
       refreshAll();
     });
     COMBO.county = mkCombo('cb-county', function(it){
       state.county = it.v; state.region = '';
-      if(it.prov) state.prov = it.prov;      // 同理，县也能直接选
+      if(it.prov) state.prov = it.prov;
       if(it.city) state.city = it.city;
       refreshAll();
     });
-    COMBO.region = mkCombo('cb-region', function(it){
-      state.region = it.v; refreshAll();
-    });
+    COMBO.region = mkCombo('cb-region', function(it){ state.region = it.v; refreshAll(); });
+    COMBO.type = mkCombo('cb-type', function(it){ state.place = it.v; refreshAll(); });
+    COMBO.kind = mkCombo('cb-kind', function(it){ state.kind = it.v; refreshAll(); });
+    COMBO.form = mkCombo('cb-form', function(it){ state.form = it.v; refreshAll(); });
   }
   // ---------- filter ----------
-  function match(r){
-    if(state.prov && r[F.prov]!==state.prov) return false;
-    if(state.city && (r[F.city]||'（市级未标注）')!==state.city) return false;
-    if(state.county && (r[F.county]||'（县级未标注）')!==state.county) return false;
-    if(state.type && baseOf(r[F.type])!==state.type) return false;
-    if(state.sub && subOf(r[F.type])!==state.sub) return false;
-    if(state.region && r[F.region]!==state.region) return false;
-    if(!qMatch(r)) return false;
-    return true;
-  }
+  function match(r){ return pass(r); }
 
   function typeCell(t){
     if(!t) return '<span class="muted">—</span>';
-    var b = baseOf(t), s = subOf(t);
-    var cls = b==='门前'?'t-menqian':(b==='离点式'?'t-lidian':'t-box');
-    return '<span class="tag '+cls+'">'+esc(b)+'</span>' + (s?'<span class="sub">'+esc(s)+'</span>':'');
+    var ts = splitType(t), out = [];
+    if(ts.place){
+      var cls = ts.place==='门前'?'t-menqian':'t-lidian';
+      out.push('<span class="tag '+cls+'">'+esc(ts.place)+'</span>');
+    }
+    if(ts.kind) out.push('<span class="tag t-box">'+esc(ts.kind)+'</span>');
+    if(ts.form) out.push('<span class="sub">'+esc(ts.form)+'</span>');
+    if(!ts.place && !ts.kind && !ts.form) out.push('<span class="tag t-box">'+esc(t)+'</span>');
+    return out.join('');
   }
+  function splitType(t){ return parseType(t); }
   function srcCell(k){
     var s = SRC[k];
     if(!s) return '';
@@ -746,21 +786,19 @@
     if(state.expanded[key]) delete state.expanded[key]; else state.expanded[key] = 1;
     render();
   });
-  el('f-type').addEventListener('change', function(){ state.type = this.value; fillTypes(); syncUrl(); render(); });
-  el('f-sub').addEventListener('change', function(){ state.sub = this.value; fillTypes(); syncUrl(); render(); });
+  el('btn-reset').addEventListener('click', function(){
+    state = {prov:'', city:'', county:'', region:'', place:'', kind:'', form:'', q:'', expanded:{}};
+    el('f-q').value = ''; refreshAll();
+  });
   var qt;
   el('f-q').addEventListener('input', function(){
     var v = this.value.trim();
-    clearTimeout(qt); qt = setTimeout(function(){ state.q = v; fillTypes(); fillRegion(); syncUrl(); render(); }, 180);
-  });
-  el('btn-reset').addEventListener('click', function(){
-    state = {prov:'', city:'', county:'', type:'', sub:'', region:'', q:'', expanded:{}};
-    el('f-q').value = ''; refreshAll();
+    clearTimeout(qt); qt = setTimeout(function(){ state.q = v; fillDims(); fillRegion(); syncUrl(); render(); }, 180);
   });
   // ---------- url ----------
   function syncUrl(){
     var u = new URL(location.href), q = u.searchParams;
-    [['p','prov'],['c','city'],['n','county'],['t','type'],['s','sub'],['r','region'],['q','q']].forEach(function(kv){
+    [['p','prov'],['c','city'],['n','county'],['r','region'],['t','place'],['s','kind'],['f','form'],['q','q']].forEach(function(kv){
       if(state[kv[1]]) q.set(kv[0], state[kv[1]]); else q.delete(kv[0]);
     });
     history.replaceState(null, '', u.pathname + (q.toString()?'?'+q:'') + u.hash);
@@ -775,7 +813,7 @@
   function readUrl(){
     var q = new URLSearchParams(location.search);
     state.prov = q.get('p') || ''; state.city = q.get('c') || ''; state.county = q.get('n') || '';
-    state.type = q.get('t') || ''; state.sub = q.get('s') || ''; state.q = q.get('q') || '';
+    state.place = q.get('t') || ''; state.kind = q.get('s') || ''; state.form = q.get('f') || ''; state.q = q.get('q') || '';
     state.region = q.get('r') || '';
     el('f-q').value = state.q;
   }
