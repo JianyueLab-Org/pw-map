@@ -317,6 +317,11 @@
     ROWS.forEach(function(r){ if(r[F.prov]===state.prov){ var k = r[F.city]||'（市级未标注）'; c[k]=(c[k]||0)+1; } });
     var keys = Object.keys(c), sum = keys.reduce(function(a,k){ return a+c[k]; },0);
     sel.disabled = false;
+    if(keys.length === 1){          // 直辖市：地级只有一个，不给「全部地市」，直接显示它
+      state.city = keys[0];
+      sel.innerHTML = opt(keys[0], keys[0], c[keys[0]], keys[0]);
+      return;
+    }
     sel.innerHTML = opt('', '全部地市', sum, state.city) +
       keys.map(function(k){ return opt(k, k, c[k], state.city); }).join('');
   }
@@ -332,16 +337,40 @@
     sel.innerHTML = opt('', '全部区县', sum, state.county) +
       keys.map(function(k){ return opt(k, k, c[k], state.county); }).join('');
   }
+  // 类型 / 式样 的条数要跟着省·市·县·搜索词一起变：算的时候忽略自己那一维
+  function qMatch(r){
+    if(!state.q) return true;
+    var hay = (r[F.name]+' '+r[F.addr]+' '+r[F.org]+' '+r[F.prov]+' '+r[F.city]+' '+r[F.county]+' '+r[F.note]+' '+r[F.type]).toLowerCase();
+    var toks = state.q.toLowerCase().split(/\s+/).filter(Boolean);
+    for(var i=0;i<toks.length;i++) if(hay.indexOf(toks[i])<0) return false;
+    return true;
+  }
+  function facet(ignoreType, ignoreSub){
+    var out = {base:{}, sub:{}, n:0};
+    ROWS.forEach(function(r){
+      if(state.prov && r[F.prov]!==state.prov) return;
+      if(state.city && (r[F.city]||'（市级未标注）')!==state.city) return;
+      if(state.county && (r[F.county]||'（县级未标注）')!==state.county) return;
+      if(!ignoreType && state.type && baseOf(r[F.type])!==state.type) return;
+      if(!ignoreSub && state.sub && subOf(r[F.type])!==state.sub) return;
+      if(!qMatch(r)) return;
+      out.n++;
+      var b = baseOf(r[F.type]); if(b) out.base[b] = (out.base[b]||0)+1;
+      var s = subOf(r[F.type]); if(s) out.sub[s] = (out.sub[s]||0)+1;
+    });
+    return out;
+  }
   function fillType(){
-    var keys = Object.keys(baseCount).sort();
-    el('f-type').innerHTML = opt('', '全部类型', null, state.type) +
-      keys.map(function(k){ return opt(k, k, baseCount[k], state.type); }).join('');
+    var f = facet(true, false), keys = Object.keys(f.base).sort();
+    el('f-type').innerHTML = opt('', '全部类型', f.n, state.type) +
+      keys.map(function(k){ return opt(k, k, f.base[k], state.type); }).join('');
   }
   function fillSub(){
-    var keys = Object.keys(subCount).sort();
-    el('f-sub').innerHTML = opt('', '全部式样', null, state.sub) +
-      keys.map(function(k){ return opt(k, k, subCount[k], state.sub); }).join('');
+    var f = facet(false, true), keys = Object.keys(f.sub).sort();
+    el('f-sub').innerHTML = opt('', '全部式样', f.n, state.sub) +
+      keys.map(function(k){ return opt(k, k, f.sub[k], state.sub); }).join('');
   }
+  function fillTypes(){ fillType(); fillSub(); }
 
   // ---------- filter ----------
   function match(r){
@@ -350,11 +379,7 @@
     if(state.county && (r[F.county]||'（县级未标注）')!==state.county) return false;
     if(state.type && baseOf(r[F.type])!==state.type) return false;
     if(state.sub && subOf(r[F.type])!==state.sub) return false;
-    if(state.q){
-      var hay = (r[F.name]+' '+r[F.addr]+' '+r[F.org]+' '+r[F.prov]+' '+r[F.city]+' '+r[F.county]+' '+r[F.note]+' '+r[F.type]).toLowerCase();
-      var toks = state.q.toLowerCase().split(/\s+/).filter(Boolean);
-      for(var i=0;i<toks.length;i++) if(hay.indexOf(toks[i])<0) return false;
-    }
+    if(!qMatch(r)) return false;
     return true;
   }
 
@@ -472,28 +497,28 @@
   });
   el('f-prov').addEventListener('change', function(){
     state.prov = this.value; state.city = ''; state.county = '';
-    fillCity(); fillCounty(); syncUrl(); render();
+    fillCity(); fillCounty(); fillTypes(); syncUrl(); render();
   });
   el('f-city').addEventListener('change', function(){
     state.city = this.value; state.county = '';
     if(state.city) state.expanded['P|'+state.prov] = 1;
-    fillCounty(); syncUrl(); render();
+    fillCounty(); fillTypes(); syncUrl(); render();
   });
   el('f-county').addEventListener('change', function(){
     state.county = this.value;
     if(state.county){ state.expanded['P|'+state.prov]=1; state.expanded['C|'+state.prov+'|'+state.city]=1; }
-    syncUrl(); render();
+    fillTypes(); syncUrl(); render();
   });
-  el('f-type').addEventListener('change', function(){ state.type = this.value; syncUrl(); render(); });
-  el('f-sub').addEventListener('change', function(){ state.sub = this.value; syncUrl(); render(); });
+  el('f-type').addEventListener('change', function(){ state.type = this.value; fillTypes(); syncUrl(); render(); });
+  el('f-sub').addEventListener('change', function(){ state.sub = this.value; fillTypes(); syncUrl(); render(); });
   var qt;
   el('f-q').addEventListener('input', function(){
     var v = this.value.trim();
-    clearTimeout(qt); qt = setTimeout(function(){ state.q = v; syncUrl(); render(); }, 180);
+    clearTimeout(qt); qt = setTimeout(function(){ state.q = v; fillTypes(); syncUrl(); render(); }, 180);
   });
   el('btn-reset').addEventListener('click', function(){
     state = {prov:'', city:'', county:'', type:'', sub:'', q:'', expanded:{}};
-    el('f-q').value = ''; fillProv(); fillCity(); fillCounty(); fillType(); fillSub(); syncUrl(); render();
+    el('f-q').value = ''; fillProv(); fillCity(); fillCounty(); fillTypes(); syncUrl(); render();
   });
   el('btn-expand').addEventListener('click', function(){
     provOrder.forEach(function(p){
@@ -541,7 +566,7 @@
 
   // ---------- init ----------
   readUrl();
-  fillProv(); fillCity(); fillCounty(); fillType(); fillSub();
+  fillProv(); fillCity(); fillCounty(); fillTypes();
 
   var cityCount = 0, countySet = {}, usedSrc = {};
   Object.keys(tree).forEach(function(p){ cityCount += Object.keys(tree[p]).length; });
