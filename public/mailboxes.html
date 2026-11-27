@@ -46,6 +46,7 @@
     backdrop-filter:blur(8px);border-bottom:1px solid var(--line);padding:10px 0}
   .filters{display:flex;flex-wrap:wrap;gap:8px;align-items:flex-end}
   .field{display:flex;flex-direction:column;gap:3px;min-width:0}
+.field[hidden]{display:none}   /* display:flex 会盖掉 UA 的 [hidden] */
   .field > label{font-size:11px;color:var(--ink-3);padding-left:2px}
   select,input[type=search]{
     appearance:none;border:1px solid var(--line);background:#fff;color:var(--ink);
@@ -172,6 +173,7 @@
       <div class="field"><label for="f-county">县级行政区划</label><select id="f-county" disabled></select></div>
       <div class="field"><label for="f-type">类型</label><select id="f-type"></select></div>
       <div class="field"><label for="f-sub">式样</label><select id="f-sub"></select></div>
+      <div class="field" id="wrap-region" hidden><label for="f-region">区域</label><select id="f-region"></select></div>
       <div class="field search"><label for="f-q">搜索</label><input id="f-q" type="search" placeholder="网点名称 / 地址 / 责任机构" autocomplete="off"></div>
       <button class="btn" id="btn-reset">重置</button>
     </div>
@@ -198,8 +200,8 @@
               <th>省级行政区划</th>
               <th>地级行政区划</th>
               <th>县级行政区划</th>
-              <th>区域</th>
               <th>邮筒（箱）名称</th>
+              <th>区域</th>
               <th>类型</th>
               <th>责任机构</th>
               <th>地址</th>
@@ -295,7 +297,7 @@
     var s = subOf(r[F.type]); if(s) subCount[s] = (subCount[s]||0)+1;
   });
 
-  var state = {prov:'', city:'', county:'', type:'', sub:'', q:'', expanded:{}};
+  var state = {prov:'', city:'', county:'', type:'', sub:'', region:'', q:'', expanded:{}};
   var PAGE = 40, shown = 0;
 
   function el(id){ return document.getElementById(id); }
@@ -353,6 +355,7 @@
       if(state.county && (r[F.county]||'（县级未标注）')!==state.county) return;
       if(!ignoreType && state.type && baseOf(r[F.type])!==state.type) return;
       if(!ignoreSub && state.sub && subOf(r[F.type])!==state.sub) return;
+      if(state.region && r[F.region]!==state.region) return;
       if(!qMatch(r)) return;
       out.n++;
       var b = baseOf(r[F.type]); if(b) out.base[b] = (out.base[b]||0)+1;
@@ -371,6 +374,29 @@
       keys.map(function(k){ return opt(k, k, f.sub[k], state.sub); }).join('');
   }
   function fillTypes(){ fillType(); fillSub(); }
+  // 区域：只有当前行政区划范围内确实有区域数据时才出现
+  function fillRegion(){
+    var c = {}, n = 0;
+    ROWS.forEach(function(r){
+      if(state.prov && r[F.prov]!==state.prov) return;
+      if(state.city && (r[F.city]||'（市级未标注）')!==state.city) return;
+      if(state.county && (r[F.county]||'（县级未标注）')!==state.county) return;
+      if(!qMatch(r)) return;
+      var g = r[F.region];
+      if(!g) return;
+      c[g] = (c[g]||0)+1; n++;
+    });
+    var keys = Object.keys(c).sort(), wrap = el('wrap-region'), sel = el('f-region');
+    if(!keys.length){                      // 这段区划里没有区域字段 → 整个下拉收起来
+      wrap.hidden = true;
+      state.region = '';
+      sel.innerHTML = '';
+      return;
+    }
+    wrap.hidden = false;
+    sel.innerHTML = opt('', '全部区域', n, state.region) +
+      keys.map(function(k){ return opt(k, k, c[k], state.region); }).join('');
+  }
 
   // ---------- filter ----------
   function match(r){
@@ -379,6 +405,7 @@
     if(state.county && (r[F.county]||'（县级未标注）')!==state.county) return false;
     if(state.type && baseOf(r[F.type])!==state.type) return false;
     if(state.sub && subOf(r[F.type])!==state.sub) return false;
+    if(state.region && r[F.region]!==state.region) return false;
     if(!qMatch(r)) return false;
     return true;
   }
@@ -411,8 +438,8 @@
       '<td>'+esc(r[F.prov])+'</td>'+
       '<td>'+esc(r[F.city])+'</td>'+
       '<td>'+esc(r[F.county])+'</td>'+
-      '<td>'+(r[F.region]?'<span class="rg">'+esc(r[F.region])+'</span>':'')+'</td>'+
       '<td>'+(r[F.name]?esc(r[F.name]):'<span class="muted">—</span>')+'</td>'+
+      '<td>'+(r[F.region]?'<span class="rg">'+esc(r[F.region])+'</span>':'')+'</td>'+
       '<td>'+typeCell(r[F.type])+'</td>'+
       '<td>'+(r[F.org]?esc(r[F.org]):'<span class="muted">—</span>')+'</td>'+
       '<td class="addr">'+esc(r[F.addr])+mapLink(r)+'</td>'+
@@ -497,28 +524,29 @@
   });
   el('f-prov').addEventListener('change', function(){
     state.prov = this.value; state.city = ''; state.county = '';
-    fillCity(); fillCounty(); fillTypes(); syncUrl(); render();
+    fillCity(); fillCounty(); fillTypes(); fillRegion(); syncUrl(); render();
   });
   el('f-city').addEventListener('change', function(){
     state.city = this.value; state.county = '';
     if(state.city) state.expanded['P|'+state.prov] = 1;
-    fillCounty(); fillTypes(); syncUrl(); render();
+    fillCounty(); fillTypes(); fillRegion(); syncUrl(); render();
   });
   el('f-county').addEventListener('change', function(){
     state.county = this.value;
     if(state.county){ state.expanded['P|'+state.prov]=1; state.expanded['C|'+state.prov+'|'+state.city]=1; }
-    fillTypes(); syncUrl(); render();
+    fillTypes(); fillRegion(); syncUrl(); render();
   });
   el('f-type').addEventListener('change', function(){ state.type = this.value; fillTypes(); syncUrl(); render(); });
   el('f-sub').addEventListener('change', function(){ state.sub = this.value; fillTypes(); syncUrl(); render(); });
+  el('f-region').addEventListener('change', function(){ state.region = this.value; fillTypes(); syncUrl(); render(); });
   var qt;
   el('f-q').addEventListener('input', function(){
     var v = this.value.trim();
-    clearTimeout(qt); qt = setTimeout(function(){ state.q = v; fillTypes(); syncUrl(); render(); }, 180);
+    clearTimeout(qt); qt = setTimeout(function(){ state.q = v; fillTypes(); fillRegion(); syncUrl(); render(); }, 180);
   });
   el('btn-reset').addEventListener('click', function(){
-    state = {prov:'', city:'', county:'', type:'', sub:'', q:'', expanded:{}};
-    el('f-q').value = ''; fillProv(); fillCity(); fillCounty(); fillTypes(); syncUrl(); render();
+    state = {prov:'', city:'', county:'', type:'', sub:'', region:'', q:'', expanded:{}};
+    el('f-q').value = ''; fillProv(); fillCity(); fillCounty(); fillTypes(); fillRegion(); syncUrl(); render();
   });
   el('btn-expand').addEventListener('click', function(){
     provOrder.forEach(function(p){
@@ -539,7 +567,7 @@
   // ---------- url ----------
   function syncUrl(){
     var u = new URL(location.href), q = u.searchParams;
-    [['p','prov'],['c','city'],['n','county'],['t','type'],['s','sub'],['q','q']].forEach(function(kv){
+    [['p','prov'],['c','city'],['n','county'],['t','type'],['s','sub'],['r','region'],['q','q']].forEach(function(kv){
       if(state[kv[1]]) q.set(kv[0], state[kv[1]]); else q.delete(kv[0]);
     });
     history.replaceState(null, '', u.pathname + (q.toString()?'?'+q:'') + u.hash);
@@ -555,6 +583,7 @@
     var q = new URLSearchParams(location.search);
     state.prov = q.get('p') || ''; state.city = q.get('c') || ''; state.county = q.get('n') || '';
     state.type = q.get('t') || ''; state.sub = q.get('s') || ''; state.q = q.get('q') || '';
+    state.region = q.get('r') || '';
     el('f-q').value = state.q;
   }
 
@@ -566,7 +595,7 @@
 
   // ---------- init ----------
   readUrl();
-  fillProv(); fillCity(); fillCounty(); fillTypes();
+  fillProv(); fillCity(); fillCounty(); fillTypes(); fillRegion();
 
   var cityCount = 0, countySet = {}, usedSrc = {};
   Object.keys(tree).forEach(function(p){ cityCount += Object.keys(tree[p]).length; });
