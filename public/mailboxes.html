@@ -1,0 +1,927 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>全国邮政邮筒（箱）点位数据 · 公开信息汇总</title>
+<meta name="description" content="汇总各地公开的邮筒（箱）分布信息，按省 → 市 → 县逐级展开检索，每条记录附来源链接；数据来源线索整理自中国邮政邮筒（箱）数据信息目录列表。">
+<style>
+  :root{
+    --green:#0f7a4d; --green-d:#0a5c39; --green-l:#e8f5ee;
+    --ink:#16211b; --ink-2:#496057; --ink-3:#7f9187;
+    --line:#dde7e1; --line-2:#eef4f0; --bg:#f6f9f7; --card:#fff;
+    --radius:12px;
+    --shadow:0 1px 2px rgba(16,40,30,.05),0 8px 24px -12px rgba(16,40,30,.18);
+  }
+  *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    margin:0; background:var(--bg); color:var(--ink);
+    font:15px/1.65 "PingFang SC","Microsoft YaHei","Hiragino Sans GB",-apple-system,"Segoe UI",Roboto,sans-serif;
+    font-variant-numeric:tabular-nums;
+  }
+  a{color:var(--green-d);text-decoration:none}
+  a:hover{text-decoration:underline}
+  .wrap{max-width:1400px;margin:0 auto;padding:0 20px}
+
+  /* ---------- hero ---------- */
+  header.hero{
+    background:
+      radial-gradient(900px 240px at 12% -40%,rgba(15,122,77,.22),transparent 60%),
+      linear-gradient(180deg,#0f7a4d 0%,#0c6a43 100%);
+    color:#fff;padding:30px 0 22px;
+  }
+  .hero h1{margin:0 0 6px;font-size:26px;letter-spacing:.5px;font-weight:700}
+  .hero p.sub{margin:0;color:#cfeadb;font-size:clamp(11px,1.02vw,13px);line-height:1.6;max-width:none}
+.hero p.sub a{white-space:nowrap}
+  .stats{display:flex;flex-wrap:wrap;gap:10px;margin-top:18px}
+  .stat{
+    background:rgba(255,255,255,.11); border:1px solid rgba(255,255,255,.18);
+    border-radius:10px;padding:8px 14px;min-width:104px;
+  }
+  .stat b{display:block;font-size:19px;line-height:1.25}
+  .stat span{font-size:12px;color:#cbe7d9}
+
+  /* ---------- toolbar ---------- */
+  .toolbar{position:sticky;top:0;z-index:30;background:rgba(246,249,247,.95);
+    backdrop-filter:blur(8px);border-bottom:1px solid var(--line);padding:10px 0}
+  .filters{display:flex;flex-wrap:wrap;gap:8px;align-items:flex-end}
+  .field{display:flex;flex-direction:column;gap:3px;min-width:0}
+  .cbwrap{position:relative;width:100%}
+  .field.combo{width:148px;min-width:0;flex:0 0 auto}
+  .field.combo .cb-in{text-overflow:ellipsis}
+  .cb-in{width:100%;box-sizing:border-box;padding:7px 26px 7px 10px;border:1px solid var(--line);
+         border-radius:9px;background:#fff;font-size:14px;height:38px;color:var(--ink);cursor:pointer;
+         font-family:inherit;transition:border-color .15s,box-shadow .15s}
+  .cb-in:focus{outline:none;border-color:var(--green);box-shadow:0 0 0 3px rgba(15,122,77,.14)}
+  .field.combo[disabled] .cb-in{background-color:#f2f5f3;color:var(--ink-3);cursor:not-allowed}
+  .cb-ar{position:absolute;right:11px;top:50%;transform:translateY(-50%);color:var(--ink-3);font-size:10px;pointer-events:none}
+  .cb-pop{position:absolute;z-index:90;left:0;right:0;top:calc(100% + 4px);background:#fff;
+          border:1px solid var(--line);border-radius:10px;box-shadow:0 10px 26px rgba(12,40,30,.14);padding:6px}
+  .cb-q{width:100%;box-sizing:border-box;padding:6px 8px;border:1px solid var(--line);border-radius:6px;
+        font-size:12.5px;margin-bottom:5px;font-family:inherit}
+  .cb-list{max-height:264px;overflow:auto}
+  .cb-item{display:flex;justify-content:space-between;gap:8px;padding:6px 8px;border-radius:6px;
+           cursor:pointer;font-size:13px;color:var(--ink-2)}
+  .cb-item:hover{background:#f1f7f3}
+  .cb-item.sel{background:#e7f4ec;color:#0b6b43;font-weight:500}
+  .cb-item i{font-style:normal;color:var(--ink-3);font-size:11.5px}
+  .cb-empty{padding:8px;color:var(--ink-3);font-size:12.5px}
+.field[hidden]{display:none}   /* display:flex 会盖掉 UA 的 [hidden] */
+  .field > label{font-size:11px;color:var(--ink-3);padding-left:2px}
+  select,input[type=search]{
+    appearance:none;border:1px solid var(--line);background:#fff;color:var(--ink);
+    border-radius:9px;padding:8px 11px;font-size:14px;height:38px;line-height:20px;
+    font-family:inherit;transition:border-color .15s,box-shadow .15s;
+  }
+  select{background-image:linear-gradient(45deg,transparent 50%,var(--ink-3) 50%),linear-gradient(135deg,var(--ink-3) 50%,transparent 50%);
+    background-position:calc(100% - 15px) 16px,calc(100% - 10px) 16px;
+    background-size:5px 5px,5px 5px;background-repeat:no-repeat;padding-right:30px}
+  select:focus,input:focus{outline:none;border-color:var(--green);box-shadow:0 0 0 3px rgba(15,122,77,.14)}
+  select:disabled{background-color:#f2f5f3;color:var(--ink-3)}
+  .field.search{flex:1 1 200px;min-width:150px}
+  .field.search input{width:100%}
+  .filters > .field:not(.combo):not(.search){width:158px;flex:0 0 auto}
+  .filters > .field:not(.combo):not(.search) select{width:100%}
+  .btn{
+    border:1px solid var(--line);background:#fff;color:var(--ink-2);border-radius:9px;
+    padding:8px 13px;font-size:13px;cursor:pointer;height:38px;font-family:inherit;
+    transition:all .15s;white-space:nowrap;
+  }
+  .btn:hover{border-color:var(--green);color:var(--green-d)}
+  .btn.primary{background:var(--green);border-color:var(--green);color:#fff}
+  .btn.primary:hover{background:var(--green-d)}
+  .toolbar-row{display:flex;gap:8px;flex-wrap:wrap;justify-content:space-between;align-items:center;margin-top:8px}
+  .hits{font-size:13px;color:var(--ink-2)}
+  .hits b{font-size:16px;color:var(--green-d)}
+  .chips{display:flex;gap:6px;flex-wrap:wrap}
+
+  /* ---------- table ---------- */
+  main{padding:14px 0 60px}
+  .tips{margin:0 0 10px;font-size:12.5px;color:var(--ink-3)}
+  .tips b{color:var(--green)}
+  .tablebox{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden}
+  .scroll{overflow:auto;max-height:calc(100vh - 210px)}
+  table{width:100%;border-collapse:separate;border-spacing:0;font-size:13.5px}
+  thead th{
+    position:sticky;top:0;z-index:10;background:#f2f7f4;color:var(--ink-2);
+    font-weight:600;text-align:left;font-size:12px;letter-spacing:.3px;
+    padding:10px 10px;border-bottom:1px solid var(--line);white-space:nowrap;
+  }
+  tbody td{padding:9px 10px;border-bottom:1px solid var(--line-2);vertical-align:top}
+  tbody tr.leaf:hover td{background:#fbfefc}
+  td.idx{color:var(--ink-3);font-size:12px;width:44px}
+  td.addr{min-width:240px}
+  td.sched{white-space:nowrap;font-size:12.5px;color:var(--ink-2)}
+  td.note{font-size:12px;color:var(--ink-3);max-width:150px}
+  td.src{white-space:nowrap;font-size:12.5px}
+  .muted{color:var(--ink-3)}
+  .tag{display:inline-block;font-size:11.5px;padding:1px 8px;border-radius:999px;border:1px solid var(--line);background:#fafcfb;color:var(--ink-2);white-space:nowrap}
+  .tag.t-menqian{border-color:#c9e3d6;background:#eef8f2;color:#0b6b43}
+  .tag.t-lidian{border-color:#f0d3ca;background:#fdf0ec;color:#a83b23}
+  .tag.t-box{border-color:#d8dce8;background:#f3f5fb;color:#3d4a70}
+  .sub{display:inline-block;font-size:11px;color:var(--ink-3);margin-left:3px}
+  .rg{font-size:11.5px;color:var(--ink-2);border:1px dashed var(--line);border-radius:6px;padding:0 6px;white-space:nowrap}
+  .dows{display:inline-flex;gap:2px;margin-right:5px;vertical-align:middle}
+  .dow{display:inline-block;width:16px;height:16px;line-height:16px;text-align:center;font-size:10.5px;
+       border-radius:4px;border:1px solid var(--line);color:#b9c2c6;background:#fbfcfc}
+  .dow.on{border-color:#0b6b43;background:#0b6b43;color:#fff}
+  .chip{display:inline-block;font-size:11.5px;padding:1px 7px;border-radius:999px;
+        border:1px solid #c9e3d6;background:#eef8f2;color:#0b6b43;margin-right:4px;white-space:nowrap}
+  .tm{display:inline-block;font-size:11.5px;font-variant-numeric:tabular-nums;padding:1px 6px;margin-right:3px;
+      border-radius:4px;background:#f3f6f4;color:var(--ink-2);white-space:nowrap}
+  .maplink{font-size:12px;color:var(--ink-3);white-space:nowrap;margin-left:6px}
+  .maplink:hover{color:var(--green)}
+
+  /* ---------- group rows ---------- */
+  tr.grp td{padding:0;border-bottom:1px solid var(--line)}
+  tr.grp button{
+    width:100%;display:flex;align-items:center;gap:9px;text-align:left;
+    background:#f7fbf9;border:0;border-left:3px solid var(--green);color:var(--ink);
+    padding:9px 12px;font:inherit;font-size:13.5px;cursor:pointer;
+  }
+  tr.grp button:hover{background:#eef7f1}
+  tr.grp.lv2 button{background:#fbfdfc;border-left-color:#8cc3a7;font-weight:500}
+  tr.grp.lv3 button{background:#fff;border-left-color:#cfe3d8;font-weight:400}
+  tr.grp .caret{width:14px;display:inline-block;transition:transform .15s;color:var(--green);font-size:11px}
+  tr.grp.open .caret{transform:rotate(90deg)}
+  tr.grp .gn{font-weight:600;letter-spacing:.3px}
+  tr.grp.lv3 .gn{font-weight:500;color:var(--ink-2)}
+  tr.grp .cnt{font-size:11.5px;color:var(--ink-3);background:#fff;border:1px solid var(--line);border-radius:999px;padding:0 8px}
+  tr.grp .src{font-size:11px;color:var(--ink-3);margin-left:auto}
+
+  .morebar{display:flex;justify-content:center;padding:16px;border-top:1px solid var(--line-2)}
+  /* display:flex 会盖掉浏览器对 [hidden] 的 display:none，必须显式补一条 */
+  .morebar[hidden]{display:none}
+  .empty{padding:48px 20px;text-align:center;color:var(--ink-3)}
+  .empty b{display:block;font-size:15px;color:var(--ink-2);margin-bottom:4px}
+
+  /* ---------- footer ---------- */
+  footer{border-top:1px solid var(--line);background:#fff;padding:32px 0 48px;font-size:13.5px;color:var(--ink-2)}
+  footer h2{font-size:15px;color:var(--ink);margin:0 0 10px}
+  footer h2:not(:first-child){margin-top:26px}
+  footer ul{margin:0;padding-left:20px}
+  footer li{margin:4px 0}
+  .srctable{width:100%;border-collapse:collapse;font-size:12.5px;margin-top:8px}
+  .srctable th,.srctable td{border-bottom:1px solid var(--line-2);padding:7px 8px;text-align:left;vertical-align:top}
+  .srctable th{color:var(--ink-3);font-weight:500;font-size:11.5px}
+  .warn{background:#fff8ec;border:1px solid #f2dcb3;border-radius:10px;padding:12px 14px;margin-top:12px;color:#7a5a19;font-size:12.5px}
+  details{margin-top:10px;border:1px solid var(--line);border-radius:10px;padding:10px 14px;background:#fbfdfc}
+  summary{cursor:pointer;font-size:13.5px;color:var(--ink);font-weight:500}
+  .toast{
+    position:fixed;left:50%;bottom:26px;transform:translate(-50%,20px);opacity:0;pointer-events:none;
+    background:#16211b;color:#fff;padding:9px 16px;border-radius:9px;font-size:13px;transition:.2s;z-index:99;
+  }
+  .toast.on{opacity:1;transform:translate(-50%,0)}
+  .copy{text-align:center;font-size:12px;color:var(--ink-3);margin:26px 0 8px;line-height:1.7}
+  .copy a{color:var(--ink-3);text-decoration:underline;text-underline-offset:2px}
+  .copy a:hover{color:var(--green)}
+
+  @media (max-width:900px){
+    .toolbar{position:static}
+    .filters{gap:6px}
+    .field.combo{width:calc(50% - 3px)}
+    .filters > .field:not(.combo):not(.search){width:calc(50% - 3px)}
+    .field.search{flex:1 1 100%;min-width:0}
+    .cb-in{height:34px;font-size:13px;padding:6px 22px 6px 9px}
+    .filters > .field:not(.combo):not(.search) select{height:34px;font-size:13px}
+    .hero h1{font-size:21px}
+    .scroll{max-height:none}
+    td.note,th.note{display:none}
+  }
+
+  @media print{
+    .toolbar,.morebar,.maplink{display:none}
+    .scroll{max-height:none;overflow:visible}
+    body{background:#fff}
+  }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap">
+    <h1>全国邮政邮筒（箱）点位数据</h1>
+    <p class="sub">汇总各地公开的邮筒（箱）分布信息，按「省 → 市 → 县」逐级下拉展开，每条记录都有对应来源链接，数据来源线索整理自 <a href="https://zh.postal.wiki/wiki/中国邮政邮筒（箱）数据信息目录列表" target="_blank" rel="noopener" style="color:#bfe9d4">中国邮政邮筒（箱）数据信息目录列表</a>。</p>
+    <div class="stats" id="stats"></div>
+  </div>
+</header>
+
+<div class="toolbar">
+  <div class="wrap">
+    <div class="filters">
+      <div class="field combo" id="cb-prov">
+        <label for="cb-prov-in">省级行政区划</label>
+        <div class="cbwrap">
+          <input id="cb-prov-in" class="cb-in" type="text" readonly autocomplete="off" placeholder="全部（省份）">
+          <b class="cb-ar">▾</b>
+          <div class="cb-pop" hidden>
+            <input class="cb-q" type="text" placeholder="输入筛选…" autocomplete="off">
+            <div class="cb-list"></div>
+          </div>
+        </div>
+      </div>
+      <div class="field combo" id="cb-city">
+        <label for="cb-city-in">地级行政区划</label>
+        <div class="cbwrap">
+          <input id="cb-city-in" class="cb-in" type="text" readonly autocomplete="off" placeholder="全部（地市）">
+          <b class="cb-ar">▾</b>
+          <div class="cb-pop" hidden>
+            <input class="cb-q" type="text" placeholder="输入筛选…" autocomplete="off">
+            <div class="cb-list"></div>
+          </div>
+        </div>
+      </div>
+      <div class="field combo" id="cb-county">
+        <label for="cb-county-in">县级行政区划</label>
+        <div class="cbwrap">
+          <input id="cb-county-in" class="cb-in" type="text" readonly autocomplete="off" placeholder="全部（区县）">
+          <b class="cb-ar">▾</b>
+          <div class="cb-pop" hidden>
+            <input class="cb-q" type="text" placeholder="输入筛选…" autocomplete="off">
+            <div class="cb-list"></div>
+          </div>
+        </div>
+      </div>
+      <div class="field combo" id="cb-region">
+        <label for="cb-region-in">区域</label>
+        <div class="cbwrap">
+          <input id="cb-region-in" class="cb-in" type="text" readonly autocomplete="off" placeholder="全部（区域）">
+          <b class="cb-ar">▾</b>
+          <div class="cb-pop" hidden>
+            <div class="cb-list"></div>
+          </div>
+        </div>
+      </div>
+      <div class="field combo" id="cb-type">
+        <label for="cb-type-in">类型</label>
+        <div class="cbwrap">
+          <input id="cb-type-in" class="cb-in" type="text" readonly autocomplete="off" placeholder="全部（类型）">
+          <b class="cb-ar">▾</b>
+          <div class="cb-pop" hidden>
+            <div class="cb-list"></div>
+          </div>
+        </div>
+      </div>
+      <div class="field combo" id="cb-kind">
+        <label for="cb-kind-in">形态</label>
+        <div class="cbwrap">
+          <input id="cb-kind-in" class="cb-in" type="text" readonly autocomplete="off" placeholder="全部（形态）">
+          <b class="cb-ar">▾</b>
+          <div class="cb-pop" hidden>
+            <div class="cb-list"></div>
+          </div>
+        </div>
+      </div>
+      <div class="field combo" id="cb-form">
+        <label for="cb-form-in">式样</label>
+        <div class="cbwrap">
+          <input id="cb-form-in" class="cb-in" type="text" readonly autocomplete="off" placeholder="全部（式样）">
+          <b class="cb-ar">▾</b>
+          <div class="cb-pop" hidden>
+            <div class="cb-list"></div>
+          </div>
+        </div>
+      </div>
+      <div class="field search"><label for="f-q">搜索</label><input id="f-q" type="search" placeholder="网点名称 / 地址 / 责任机构" autocomplete="off"></div>
+      <button class="btn" id="btn-reset">重置</button>
+    </div>
+    <div class="toolbar-row">
+      <div class="hits">命中 <b id="hit">0</b> 条 <span class="muted" id="hit-sub"></span></div>
+      <div class="chips">
+        <button class="btn" id="btn-expand">展开全部</button>
+        <button class="btn" id="btn-collapse">折叠全部</button>
+        <button class="btn primary" id="btn-link">复制筛选链接</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<main>
+  <div class="wrap">
+    <p class="tips">点击行首的 <b>▶</b> 逐级展开（省 → 市 → 县 → 点位）；也可以直接用上面的下拉框一跳到底。地址右侧的「地图」按地址或坐标打开高德。</p>
+    <div class="tablebox">
+      <div class="scroll" id="scroll">
+        <table id="tbl">
+          <thead>
+            <tr>
+              <th class="idx">#</th>
+              <th>省级行政区划</th>
+              <th>地级行政区划</th>
+              <th>县级行政区划</th>
+              <th>邮筒（箱）名称</th>
+              <th>类型</th>
+              <th>责任机构</th>
+              <th>地址</th>
+              <th>开取频率 / 时间</th>
+              <th class="note">备注</th>
+              <th>来源</th>
+            </tr>
+          </thead>
+          <tbody id="tbody"></tbody>
+        </table>
+        <div class="empty" id="empty" hidden>
+          <b>没有匹配的点位</b>
+          试试放宽筛选条件，或清空搜索词。
+        </div>
+        <div class="morebar" id="morebar" hidden>
+          <button class="btn" id="btn-more">加载更多（剩余 <span id="rest">0</span> 个县区）</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<footer>
+  <div class="wrap">
+    <h2>数据说明</h2>
+    <ul>
+      <li><b>名称一列为什么有的是空的？</b> 有的公示只给"所属网点"或"开取机构名称"，有的干脆只给地址（沈阳、哈尔滨、佛山等离点式清单）。没有名称就留空，用类型＋地址定位，<b>不做臆造</b>。</li>
+      <li><b>责任机构为什么大面积为空？</b> 只有源文件写明维护单位的才填（如河北沧州的揽投部、新疆喀什的分公司）。对云南各地市的表，"所属网点"本身就是该筒箱的维护网点，其名称已经体现在"名称"列，不重复占两栏。</li>
+      <li><b>类型 / 形态 / 式样</b>：三个并列维度。「类型」按设置位置分：「门前」= 设在邮政营业场所门前（普遍服务标配），「离点式」= 远离营业场所独立设置的“野生邮筒”；「形态」按器物分：邮筒 / 邮箱；「式样」按安装方式分：立式 / 悬挂式。原文没写到的维度留空——多数表只标了类型，所以形态、式样在大部分城市是空的，不是缺数据。</li>
+      <li><b>区域</b>：源文件标注了设置区域（城市 / 乡镇驻地 / 行政村 / 农村 / 景区）的才填，统一写成城区 / 乡镇 / 乡村 / 景区；未标注的留空。</li>
+      <li><b>邮编</b>写在地址后面，不单占一列。</li>
+      <li><b>坐标</b>只在新疆喀什的 XLSX 附件里有，页面上不展示；结构化 JSON 里保留了经纬度，供导入地图时使用。</li>
+      <li><b>芜湖（117 条）是人工转录</b>：源文件为三张表格截图（原始仅 420px 宽），已逐行对图抄录；原文里"江坝坝"这类重复字照原文保留。仍有少量字符受图源清晰度限制，建议与原件比对。</li>
+    </ul>
+
+    <h2>原文疑点清单</h2>
+    <p style="margin:0 0 6px">下面这些是<b>公示文件自己写错、写重或不一致</b>的地方。我们一律照抄，没有替它们"修正"——因为改了就成了我们编的。</p>
+    <details>
+      <summary>展开（<span id="quirk-count">0</span> 条）</summary>
+      <table class="srctable" id="quirktable"></table>
+    </details>
+
+    <h2>还没收进来的</h2>
+    <p style="margin:0 0 6px">下面这些地市在邮政维基的目录里出现过，但公示载体是<b>微信文章里的图片</b>、小红书（需登录）或城市数据平台（依申请公开），拿不到可逐条引用的文字，所以没有收录。</p>
+    <details>
+      <summary>展开清单（<span id="pend-count">0</span> 条）</summary>
+      <table class="srctable" id="pendtable"></table>
+    </details>
+
+    <h2>使用与免责</h2>
+    <ul>
+      <li>数据版权归各发布机关；本页只做汇总与结构化，每条均标注原始出处链接。</li>
+      <li>筒箱点位随市政建设、道路改造调整，<b>以公示原文与现场标识为准</b>；本页反映的是各文件发布时的状态。</li>
+      <li>「开取频率 / 时间」为文件记载的开箱频次，遇节假日可能调整。</li>
+    </ul>
+    <p class="copy">
+      Copyright © 2026 <a href="https://maps.postal.wiki/" target="_blank" rel="noopener">Postal Wiki Map</a>
+      · 本站采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh-Hans" target="_blank" rel="noopener">CC BY-NC-SA 4.0 国际许可协议</a> 进行许可
+    </p>
+  </div>
+</footer>
+
+<div class="toast" id="toast"></div>
+
+<script id="data" type="application/json">null</script>
+<script>
+(function(){
+  "use strict";
+
+  // 数据源：单文件预览版把 JSON 内联在 #data；仓库版为空，改从 data/postboxes.json 取。
+  function boot(PAYLOAD){
+  var ROWS = (PAYLOAD.records || []).map(function(r){
+    return [r.province || '', r.city || '', r.county || '', r.area || '',
+            r.name || '', r.type || '', r.org || '', r.address || '',
+            r.schedule || '', r.note || '', r.source || '',
+            r.lon == null ? '' : String(r.lon), r.lat == null ? '' : String(r.lat),
+            r.coordSuspect ? 1 : 0, r.days || '', r.times || ''];
+  });
+  var SRC = PAYLOAD.sources || {}, PEND = PAYLOAD.pending || [];
+  var F = {prov:0,city:1,county:2,region:3,name:4,type:5,org:6,addr:7,sched:8,note:9,src:10,lon:11,lat:12,suspect:13,days:14,times:15};
+
+  function baseOf(t){ var i = (t||'').indexOf('·'); return i < 0 ? (t||'') : t.slice(0, i); }
+  function subOf(t){ var i = (t||'').indexOf('·'); return i < 0 ? '' : t.slice(i+1); }
+
+  // ---------- tree ----------
+  var tree = {}, provOrder = [], baseCount = {}, subCount = {};
+  ROWS.forEach(function(r){
+    var p = r[F.prov], c = r[F.city] || '（市级未标注）', n = r[F.county] || '（县级未标注）';
+    if(!tree[p]){ tree[p] = {}; provOrder.push(p); }
+    if(!tree[p][c]) tree[p][c] = {};
+    if(!tree[p][c][n]) tree[p][c][n] = [];
+    tree[p][c][n].push(r);
+    var b = baseOf(r[F.type]); if(b) baseCount[b] = (baseCount[b]||0)+1;
+    var s = subOf(r[F.type]); if(s) subCount[s] = (subCount[s]||0)+1;
+  });
+
+  var state = {prov:'', city:'', county:'', region:'', place:'', kind:'', form:'', q:'', expanded:{}};
+  var PAGE = 40, shown = 0;
+
+  function el(id){ return document.getElementById(id); }
+  function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,function(c){
+    return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+  function opt(v,label,count,sel){
+    return '<option value="'+esc(v)+'"'+(v===sel?' selected':'')+'>'+esc(label)+(count!=null?'（'+count+'）':'')+'</option>';
+  }
+
+  // ---------- 可搜索下拉（省/市/县带搜索，区域/类型/式样/形态不带） ----------
+  var COMBO = {};
+  function mkCombo(id, onPick){
+    var root = el(id), inp = root.querySelector('.cb-in'), pop = root.querySelector('.cb-pop'),
+        q = root.querySelector('.cb-q'), list = root.querySelector('.cb-list'),
+        arrow = root.querySelector('.cb-ar');
+    if(!q) q = { value: '', focus: function(){}, addEventListener: function(){} };
+    var items = [], sel = '', opened = false;
+    function labelOf(v){
+      for(var i = 0; i < items.length; i++) if(items[i].v === v) return items[i].label;
+      return '';
+    }
+    function paint(){
+      var kw = (q.value || '').trim().toLowerCase(), html = '';
+      items.forEach(function(it, i){
+        if(kw && (it.label + ' ' + it.v).toLowerCase().indexOf(kw) < 0) return;
+        html += '<div class="cb-item' + (it.v === sel ? ' sel' : '') + '" data-i="' + i + '">' +
+                '<span>' + esc(it.label) + '</span>' +
+                (it.count != null ? '<i>' + it.count + '</i>' : '') + '</div>';
+      });
+      list.innerHTML = html || '<div class="cb-empty">没有匹配项</div>';
+    }
+    function openPop(){
+      if(root.hasAttribute('disabled')) return;
+      opened = true; pop.hidden = false; q.value = ''; paint(); q.focus();
+    }
+    function closePop(){ opened = false; pop.hidden = true; inp.value = labelOf(sel); }
+    inp.addEventListener('click', function(e){ e.stopPropagation(); if(opened) closePop(); else openPop(); });
+    arrow.addEventListener('click', function(e){ e.stopPropagation(); if(opened) closePop(); else openPop(); });
+    q.addEventListener('input', paint);
+    q.addEventListener('keydown', function(e){ if(e.key === 'Escape') closePop(); });
+    list.addEventListener('click', function(e){
+      var t = e.target.closest('.cb-item');
+      if(!t) return;
+      var it = items[+t.getAttribute('data-i')];
+      sel = it.v; closePop(); onPick(it);
+    });
+    document.addEventListener('click', function(e){ if(opened && !root.contains(e.target)) closePop(); });
+    return {
+      set: function(arr, cur, disabled){
+        items = arr; sel = cur || '';
+        if(disabled){ root.setAttribute('disabled', ''); inp.value = ''; inp.placeholder = '无可选项'; }
+        else { root.removeAttribute('disabled'); inp.value = labelOf(sel); }
+        if(opened) paint();
+      }
+    };
+  }
+  function cityOf(r){ return r[F.city] || '（市级未标注）'; }
+  function countyOf(r){ return r[F.county] || '（县级未标注）'; }
+
+  // ---------- 类型拆成三个维度 ----------
+  var PLACES = ['门前', '离点式'], KINDS = ['邮筒', '邮箱'], FORMS = ['立式', '悬挂式'];
+  function parseType(t){
+    var o = { place: '', kind: '', form: '' };
+    String(t || '').split('·').forEach(function(p){
+      p = p.trim();
+      if(PLACES.indexOf(p) >= 0) o.place = p;
+      else if(KINDS.indexOf(p) >= 0) o.kind = p;
+      else if(FORMS.indexOf(p) >= 0) o.form = p;
+    });
+    return o;
+  }
+  var TSPLIT = ROWS.map(function(r){ return parseType(r[F.type]); });
+  ROWS.forEach(function(r, i){ r._ts = TSPLIT[i]; });
+
+  function fillProv(){
+    var c = {}, n = 0;
+    ROWS.forEach(function(r){ var k = r[F.prov]; if(!k) return; c[k] = (c[k]||0)+1; n++; });
+    var items = [{v:'', label:'全部（' + n.toLocaleString() + '）', count:null}];
+    provOrder.forEach(function(p){ items.push({v:p, label:p, count:c[p]||0}); });
+    COMBO.prov.set(items, state.prov, false);
+  }
+  function fillCity(){
+    var base = ROWS.filter(function(r){ return !state.prov || r[F.prov] === state.prov; });
+    var c = {}, order = [];
+    base.forEach(function(r){ var k = cityOf(r); if(!c[k]){ c[k] = 0; order.push(k); } c[k]++; });
+    var items = [{v:'', label:'全部（' + base.length.toLocaleString() + '）', count:null}];
+    order.forEach(function(k){
+      var r0 = null;
+      for(var i = 0; i < base.length; i++) if(cityOf(base[i]) === k){ r0 = base[i]; break; }
+      items.push({v:k, label:k, count:c[k], prov:r0 ? r0[F.prov] : ''});
+    });
+    if(order.length === 1){ state.city = order[0]; COMBO.city.set([items[1]], state.city, false); return; }
+    COMBO.city.set(items, state.city, false);
+  }
+  function fillCounty(){
+    var base = ROWS.filter(function(r){
+      if(state.prov && r[F.prov] !== state.prov) return false;
+      if(state.city && cityOf(r) !== state.city) return false;
+      return true;
+    });
+    var c = {}, order = [];
+    base.forEach(function(r){ var k = countyOf(r); if(!c[k]){ c[k] = 0; order.push(k); } c[k]++; });
+    var items = [{v:'', label:'全部（' + base.length.toLocaleString() + '）', count:null}];
+    order.forEach(function(k){
+      var r0 = null;
+      for(var i = 0; i < base.length; i++) if(countyOf(base[i]) === k){ r0 = base[i]; break; }
+      items.push({v:k, label:(state.city ? k : cityOf(r0) + ' · ' + k), count:c[k],
+                  prov:r0 ? r0[F.prov] : '', city:r0 ? cityOf(r0) : ''});
+    });
+    COMBO.county.set(items, state.county, items.length <= 1);
+  }
+  function fillRegion(){
+    var c = {}, n = 0;
+    ROWS.forEach(function(r){
+      if(state.prov && r[F.prov] !== state.prov) return;
+      if(state.city && cityOf(r) !== state.city) return;
+      if(state.county && countyOf(r) !== state.county) return;
+      if(!qMatch(r)) return;
+      if(!r[F.region]) return;
+      c[r[F.region]] = (c[r[F.region]]||0)+1; n++;
+    });
+    var keys = Object.keys(c).sort(), root = el('cb-region');
+    if(!keys.length){ root.hidden = true; state.region = ''; COMBO.region.set([], '', true); return; }
+    root.hidden = false;
+    var items = [{v:'', label:'全部（' + n.toLocaleString() + '）', count:null}];
+    keys.forEach(function(k){ items.push({v:k, label:k, count:c[k]}); });
+    COMBO.region.set(items, state.region, keys.length <= 1);
+  }
+
+  // 三个类型维度按同一套分面计数（各自忽略自己那一维）
+  function facetDim(dim){
+    var c = {}, n = 0;
+    ROWS.forEach(function(r){
+      if(state.prov && r[F.prov] !== state.prov) return;
+      if(state.city && cityOf(r) !== state.city) return;
+      if(state.county && countyOf(r) !== state.county) return;
+      if(state.region && r[F.region] !== state.region) return;
+      if(!qMatch(r)) return;
+      var ts = r._ts;
+      if(dim !== 'place' && state.place && ts.place !== state.place) return;
+      if(dim !== 'kind' && state.kind && ts.kind !== state.kind) return;
+      if(dim !== 'form' && state.form && ts.form !== state.form) return;
+      n++;
+      if(ts[dim]) c[ts[dim]] = (c[ts[dim]]||0)+1;
+    });
+    return {c:c, n:n};
+  }
+  function fillDim(dim, comboId, values, title){
+    var f = facetDim(dim), items = [{v:'', label:'全部（' + f.n.toLocaleString() + '）', count:null}];
+    values.forEach(function(v){
+      if(f.c[v]) items.push({v:v, label:v, count:f.c[v]});
+    });
+    var keys = Object.keys(f.c);
+    COMBO[comboId].set(items, state[dim], keys.length <= 1);
+  }
+  function fillDims(){
+    fillDim('place', 'type', PLACES);
+    fillDim('kind', 'kind', KINDS);
+    fillDim('form', 'form', FORMS);
+  }
+  function qMatch(r){
+    if(!state.q) return true;
+    var hay = (r[F.name]+' '+r[F.addr]+' '+r[F.org]+' '+r[F.prov]+' '+r[F.city]+' '+r[F.county]+' '+r[F.note]+' '+r[F.type]).toLowerCase();
+    var toks = state.q.toLowerCase().split(/\s+/).filter(Boolean);
+    for(var i=0;i<toks.length;i++) if(hay.indexOf(toks[i])<0) return false;
+    return true;
+  }
+  function pass(r){
+    if(state.prov && r[F.prov] !== state.prov) return false;
+    if(state.city && cityOf(r) !== state.city) return false;
+    if(state.county && countyOf(r) !== state.county) return false;
+    if(state.region && r[F.region] !== state.region) return false;
+    var ts = r._ts;
+    if(state.place && ts.place !== state.place) return false;
+    if(state.kind && ts.kind !== state.kind) return false;
+    if(state.form && ts.form !== state.form) return false;
+    if(!qMatch(r)) return false;
+    return true;
+  }
+  function refreshAll(){
+    fillProv(); fillCity(); fillCounty(); fillRegion(); fillDims(); syncUrl(); render();
+  }
+  function initCombos(){
+    COMBO.prov = mkCombo('cb-prov', function(it){
+      state.prov = it.v; state.city = ''; state.county = ''; state.region = ''; refreshAll();
+    });
+    COMBO.city = mkCombo('cb-city', function(it){
+      state.city = it.v; state.county = ''; state.region = '';
+      if(it.prov) state.prov = it.prov;
+      refreshAll();
+    });
+    COMBO.county = mkCombo('cb-county', function(it){
+      state.county = it.v; state.region = '';
+      if(it.prov) state.prov = it.prov;
+      if(it.city) state.city = it.city;
+      refreshAll();
+    });
+    COMBO.region = mkCombo('cb-region', function(it){ state.region = it.v; refreshAll(); });
+    COMBO.type = mkCombo('cb-type', function(it){ state.place = it.v; refreshAll(); });
+    COMBO.kind = mkCombo('cb-kind', function(it){ state.kind = it.v; refreshAll(); });
+    COMBO.form = mkCombo('cb-form', function(it){ state.form = it.v; refreshAll(); });
+  }
+  // ---------- filter ----------
+  function match(r){ return pass(r); }
+
+  function typeCell(t){
+    if(!t) return '<span class="muted">—</span>';
+    var ts = splitType(t), out = [];
+    if(ts.place){
+      var cls = ts.place==='门前'?'t-menqian':'t-lidian';
+      out.push('<span class="tag '+cls+'">'+esc(ts.place)+'</span>');
+    }
+    if(ts.kind) out.push('<span class="tag t-box">'+esc(ts.kind)+'</span>');
+    if(ts.form) out.push('<span class="sub">'+esc(ts.form)+'</span>');
+    if(!ts.place && !ts.kind && !ts.form) out.push('<span class="tag t-box">'+esc(t)+'</span>');
+    return out.join('');
+  }
+  function splitType(t){ return parseType(t); }
+  function srcCell(k){
+    var s = SRC[k];
+    if(!s) return '';
+    return '<a href="'+esc(s.url)+'" target="_blank" rel="noopener" title="'+esc(s.org+'《'+s.title+'》'+s.date+'（'+s.fmt+'）')+'">'+esc(s.label)+'</a>';
+  }
+  function mapLink(r){
+    // 有坐标且经查可信 → 直接按坐标定位；否则退回按地址检索（坐标存疑的不给坐标链接）
+    if(r[F.lon] && r[F.lat] && !r[F.suspect]){
+      return '<a class="maplink" target="_blank" rel="noopener" href="https://uri.amap.com/marker?position='+encodeURIComponent(r[F.lon]).replace(/%2C/g,',')+','+encodeURIComponent(r[F.lat])+'&name='+encodeURIComponent(r[F.name]||'邮筒')+'">地图</a>';
+    }
+    return '<a class="maplink" target="_blank" rel="noopener" href="https://ditu.amap.com/search?query='+encodeURIComponent(r[F.addr])+'">地图</a>';
+  }
+
+  // ---------- 开取频次：周几打勾 + 时刻小标签 ----------
+  var CN_DAY = {'一':1,'二':2,'三':3,'四':4,'五':5,'六':6,'日':7,'天':7};
+  // 只认「周X至周Y」「周一、周三」这种明确写法；「每日」另行处理
+  function explicitDays(s){
+    if(!s) return null;
+    var m, set = null, i;
+    var re = /(?:周|星期)([一二三四五六日天])\s*(?:至|到|~|-)\s*(?:周|星期)?([一二三四五六日天])/g;
+    while((m = re.exec(s))){
+      var a = CN_DAY[m[1]], b = CN_DAY[m[2]];
+      if(a === undefined || b === undefined) continue;
+      if(a > b){ var t = a; a = b; b = t; }
+      set = set || {};
+      for(i = a; i <= b; i++) set[i] = 1;
+    }
+    if(set) return set;
+    var re2 = /(?:周|星期)([一二三四五六日天])/g, one = {}, any = false;
+    while((m = re2.exec(s))){ one[CN_DAY[m[1]]] = 1; any = true; }
+    return any ? one : null;
+  }
+  function allDays(){ var s = {}; for(var i = 1; i <= 7; i++) s[i] = 1; return s; }
+  function dowHtml(set){
+    return '<span class="dows">' + ['一','二','三','四','五','六','日'].map(function(c, i){
+      return '<span class="dow' + (set[i + 1] ? ' on' : '') + '">' + c + '</span>';
+    }).join('') + '</span>';
+  }
+  function timeList(s){
+    s = (s || '').replace(/：/g, ':').replace(/[，、;；]/g, ' ');
+    var out = [], seen = {}, m;
+    var re = /(\d{1,2}:\d{2}(?:\s*[-~至]\s*\d{1,2}:\d{2})?)/g;
+    while((m = re.exec(s))){
+      var v = m[1].replace(/\s+/g, '');
+      if(!seen[v]){ seen[v] = 1; out.push(v); }
+    }
+    return out;
+  }
+  function schedCell(days, times){
+    days = days || ''; times = times || '';
+    var chips = [], set = explicitDays(days) || explicitDays(times);
+    var tl = timeList(times), every = /每天|每日|天天/.test(days + times);
+    if(set){
+      chips.push(dowHtml(set));                        // 原文写了周几 → 打勾
+    }else if(/^\d$/.test(days)){
+      if(days === '7'){ chips.push(dowHtml(allDays())); }   // 每周7天 = 天天开
+      else { chips.push('<span class="chip">每周' + days + '天</span>'); }  // 只写天数，说不出是哪几天
+    }else if(every){
+      chips.push(dowHtml(allDays()));
+    }else if(days){
+      chips.push('<span class="chip">' + esc(days) + '</span>');
+    }else if(tl.length){
+      chips.push('<span class="chip">每天' + tl.length + '次</span>');  // 只给了时刻：按原文给的次数算
+    }
+    tl.forEach(function(t){ chips.push('<span class="tm">' + esc(t) + '</span>'); });
+    return chips.length ? chips.join('') : '';
+  }
+
+  // ---------- render ----------
+  var seq = 0;
+  function leafRow(r){
+    seq++;
+    return '<tr class="leaf">'+
+      '<td class="idx">'+seq+'</td>'+
+      '<td>'+esc(r[F.prov])+'</td>'+
+      '<td>'+esc(r[F.city])+'</td>'+
+      '<td>'+esc(r[F.county])+'</td>'+
+      '<td>'+(r[F.name]?esc(r[F.name]):'<span class="muted">—</span>')+
+        (r[F.region]?'<span class="rg">'+esc(r[F.region])+'</span>':'')+'</td>'+
+      '<td>'+typeCell(r[F.type])+'</td>'+
+      '<td>'+(r[F.org]?esc(r[F.org]):'<span class="muted">—</span>')+'</td>'+
+      '<td class="addr">'+esc(r[F.addr])+mapLink(r)+'</td>'+
+      '<td class="sched">'+schedCell(r[F.days], r[F.times])+'</td>'+
+      '<td class="note">'+(r[F.note]?esc(r[F.note]):'')+'</td>'+
+      '<td class="src">'+srcCell(r[F.src])+'</td>'+
+    '</tr>';
+  }
+  function grpRow(lv, key, label, count, open){
+    return '<tr class="grp lv'+lv+(open?' open':'')+'" data-key="'+esc(key)+'">'+
+      '<td colspan="11"><button type="button" aria-expanded="'+(open?'true':'false')+'">'+
+        '<span class="caret">▶</span><span class="gn" style="padding-left:'+((lv-1)*14)+'px">'+esc(label)+'</span>'+
+        '<span class="cnt">'+count+'</span>'+
+      '</button></td></tr>';
+  }
+
+  function render(){
+    var out = [], blocks = 0, restBlocks = 0, total = 0;
+    seq = 0;
+
+    var ft = {}, fOrder = [];
+    ROWS.forEach(function(r){
+      if(!match(r)) return;
+      var p = r[F.prov], c = r[F.city]||'（市级未标注）', n = r[F.county]||'（县级未标注）';
+      if(!ft[p]){ ft[p] = {}; fOrder.push(p); }
+      if(!ft[p][c]) ft[p][c] = {};
+      if(!ft[p][c][n]) ft[p][c][n] = [];
+      ft[p][c][n].push(r);
+      total++;
+    });
+
+    var autoOpen = !!(state.q || state.type || state.sub);
+    fOrder.forEach(function(p){
+      var cityKeys = Object.keys(ft[p]), pc = 0;
+      cityKeys.forEach(function(c){ Object.keys(ft[p][c]).forEach(function(n){ pc += ft[p][c][n].length; }); });
+      var pKey = 'P|'+p, pOpen = autoOpen || !!state.prov || !!state.expanded[pKey];
+      out.push(grpRow(1, pKey, p, pc, pOpen));
+      if(!pOpen) return;
+
+      cityKeys.forEach(function(c){
+        var countyKeys = Object.keys(ft[p][c]), rc = 0;
+        countyKeys.forEach(function(n){ rc += ft[p][c][n].length; });
+        var cKey = 'C|'+p+'|'+c;
+        var cOpen = autoOpen || !!state.city || !!state.expanded[cKey];
+        if(countyKeys.length === 1 && cOpen){
+          out.push(grpRow(2, cKey, c, rc, true));
+          ft[p][c][countyKeys[0]].forEach(function(r){ out.push(leafRow(r)); });
+          blocks++;
+          return;
+        }
+        out.push(grpRow(2, cKey, c, rc, cOpen));
+        if(!cOpen) return;
+
+        countyKeys.forEach(function(n){
+          var list = ft[p][c][n];
+          var nKey = 'N|'+p+'|'+c+'|'+n;
+          var nOpen = autoOpen || !!state.county || !!state.expanded[nKey] ||
+                      (list.length <= 8 && (!!state.city || !!state.expanded[cKey]));
+          if(blocks >= shown){ restBlocks++; return; }
+          out.push(grpRow(3, nKey, n, list.length, nOpen));
+          if(nOpen) list.forEach(function(r){ out.push(leafRow(r)); });
+          blocks++;
+        });
+      });
+    });
+
+    el('tbody').innerHTML = out.join('');
+    el('hit').textContent = total;
+    el('hit-sub').textContent = total === ROWS.length ? '· 全量 ' + ROWS.length + ' 条' : '· 共 ' + ROWS.length + ' 条';
+    el('empty').hidden = total > 0;
+    el('morebar').hidden = restBlocks === 0;
+    el('rest').textContent = restBlocks;
+  }
+
+  // ---------- events ----------
+  el('tbody').addEventListener('click', function(e){
+    var btn = e.target.closest('tr.grp button');
+    if(!btn) return;
+    var tr = btn.closest('tr'), key = tr.getAttribute('data-key');
+    if(state.expanded[key]) delete state.expanded[key]; else state.expanded[key] = 1;
+    render();
+  });
+  el('btn-reset').addEventListener('click', function(){
+    state = {prov:'', city:'', county:'', region:'', place:'', kind:'', form:'', q:'', expanded:{}};
+    el('f-q').value = ''; refreshAll();
+  });
+  var qt;
+  el('f-q').addEventListener('input', function(){
+    var v = this.value.trim();
+    clearTimeout(qt); qt = setTimeout(function(){ state.q = v; fillDims(); fillRegion(); syncUrl(); render(); }, 180);
+  });
+  // ---------- url ----------
+  function syncUrl(){
+    var u = new URL(location.href), q = u.searchParams;
+    [['p','prov'],['c','city'],['n','county'],['r','region'],['t','place'],['s','kind'],['f','form'],['q','q']].forEach(function(kv){
+      if(state[kv[1]]) q.set(kv[0], state[kv[1]]); else q.delete(kv[0]);
+    });
+    history.replaceState(null, '', u.pathname + (q.toString()?'?'+q:'') + u.hash);
+  }
+  el('btn-link').addEventListener('click', function(){
+    syncUrl();
+    var url = location.href;
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(url).then(function(){ toast('筛选链接已复制'); }, function(){ toast(url); });
+    } else { toast(url); }
+  });
+  function readUrl(){
+    var q = new URLSearchParams(location.search);
+    state.prov = q.get('p') || ''; state.city = q.get('c') || ''; state.county = q.get('n') || '';
+    state.place = q.get('t') || ''; state.kind = q.get('s') || ''; state.form = q.get('f') || ''; state.q = q.get('q') || '';
+    state.region = q.get('r') || '';
+    el('f-q').value = state.q;
+  }
+
+  var tt;
+  function toast(msg){
+    var t = el('toast'); t.textContent = msg; t.classList.add('on');
+    clearTimeout(tt); tt = setTimeout(function(){ t.classList.remove('on'); }, 2200);
+  }
+
+  // ---------- init ----------
+  readUrl();
+  initCombos(); refreshAll();
+
+  var cityCount = 0, countySet = {}, usedSrc = {};
+  Object.keys(tree).forEach(function(p){ cityCount += Object.keys(tree[p]).length; });
+  ROWS.forEach(function(r){
+    countySet[r[F.prov]+'|'+r[F.city]+'|'+r[F.county]] = 1;
+    usedSrc[r[F.src]] = 1;
+  });
+  el('stats').innerHTML = [
+    ['点位总数', ROWS.length.toLocaleString() + ' 条'],
+    ['覆盖省级行政区', Object.keys(tree).length + ' 个'],
+    ['覆盖地级城市', cityCount + ' 个'],
+    ['覆盖县级区划', Object.keys(countySet).length + ' 个'],
+    ['来源文件', Object.keys(usedSrc).length + ' 份']
+  ].map(function(x){ return '<div class="stat"><b>'+x[1]+'</b><span>'+x[0]+'</span></div>'; }).join('');
+
+  // 来源清单已下线（与 postal.wiki 目录列表重复），只在有该表格时渲染
+  if(el('srctable')){
+    var st = ['<tr><th>信息来源</th><th>发布机构</th><th>文件 / 页面</th><th>发布</th><th>载体</th><th>条数</th><th>链接</th></tr>'];
+    Object.keys(SRC).forEach(function(k){
+      var s = SRC[k], n = ROWS.filter(function(r){ return r[F.src]===k; }).length;
+      st.push('<tr><td>'+esc(s.label)+'</td><td>'+esc(s.org)+'</td><td>'+esc(s.title)+'</td><td>'+esc(s.date)+'</td><td>'+esc(s.fmt)+'</td><td>'+(n||'—')+'</td><td><a href="'+esc(s.url)+'" target="_blank" rel="noopener">原页</a></td></tr>');
+    });
+    el('srctable').innerHTML = st.join('');
+    if(el('src-count')) el('src-count').textContent = Object.keys(SRC).length;
+  }
+
+  var pt = ['<tr><th>省级</th><th>地级</th><th>来源情况</th><th>链接</th></tr>'];
+  PEND.forEach(function(x){
+    pt.push('<tr><td>'+esc(x[0])+'</td><td>'+esc(x[1])+'</td><td>'+esc(x[2])+'</td><td><a href="'+esc(x[3])+'" target="_blank" rel="noopener">原页</a></td></tr>');
+  });
+  el('pendtable').innerHTML = pt.join('');
+  el('pend-count').textContent = PEND.length;
+
+  var QK = PAYLOAD.quirks || [];
+  var qt = ['<tr><th>省级</th><th>地级</th><th>原文情况</th></tr>'];
+  QK.forEach(function(x){ qt.push('<tr><td>'+esc(x[0])+'</td><td>'+esc(x[1])+'</td><td>'+esc(x[2])+'</td></tr>'); });
+  el('quirktable').innerHTML = qt.join('');
+  el('quirk-count').textContent = QK.length;
+
+  shown = PAGE;
+  render();
+  if(state.prov || state.q || state.type || state.sub){ shown = 100000; render(); }
+  }
+
+  // ---------- 数据装载 ----------
+  function fail(msg, hint){
+    var box = document.getElementById('empty');
+    box.hidden = false;
+    box.innerHTML = '<b>数据没加载出来</b>' + esc(msg) +
+      '<div style="margin-top:10px;font-size:12.5px">' + hint + '</div>';
+    document.getElementById('hit').textContent = '0';
+  }
+  function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,function(c){
+    return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+
+  var inline = (document.getElementById('data').textContent || '').trim();
+  if (inline && inline !== 'null') {
+    try { boot(JSON.parse(inline)); }
+    catch (e) { fail('内联数据解析失败：' + e.message, ''); }
+  } else {
+    // 数据按省拆成多个小文件：先取索引，再并行取各省分片
+    // 缓存策略：索引用 no-cache 走协商缓存（一般 304）；分片走浏览器默认缓存，
+    // 并用 ?v=<generatedAt> 做版本失效——否则每次访问都要重拉约 2.8 MB。
+    fetch('data/index.json', { cache: 'no-cache' })
+      .then(function(r){
+        if (!r.ok) throw new Error('index.json HTTP ' + r.status);
+        return r.json();
+      })
+      .then(function(idx){
+        var parts = idx.parts || [];
+        var fallback = encodeURIComponent(idx.generatedAt || String(idx.count || '1'));
+        return Promise.all(parts.map(function(p){
+          // 每个分片带自己的内容摘要做版本号：同一天内改数据也能立刻失效
+          var v = p.ver ? encodeURIComponent(p.ver) : fallback;
+          return fetch('data/' + p.file + '?v=' + v)
+            .then(function(r){
+              if (!r.ok) throw new Error(p.file + ' HTTP ' + r.status);
+              return r.json();
+            })
+            .then(function(d){ return d.records || []; });
+        })).then(function(lists){
+          var all = [];
+          lists.forEach(function(x){ all = all.concat(x); });
+          idx.records = all;
+          return idx;
+        });
+      })
+      .then(boot)
+      .catch(function(e){
+        fail(e.message, '这个页面需要同目录下的 <code>data/index.json</code> 与各省分片，' +
+          '并且要通过网页服务器打开（<code>file://</code> 直开会因浏览器安全策略被拦）。' +
+          '想直接双击看的话，用「单文件预览版」。');
+      });
+  }
+})();
+</script>
+</body>
+</html>
