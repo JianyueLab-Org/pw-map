@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>全国邮政邮筒（箱）点位数据 · 公开信息汇总</title>
-<meta name="description" content="汇总各省级、地市级邮政管理局及邮政分公司主动公开的邮筒（箱）点位信息，按省级 / 地级 / 县级行政区划逐级展开检索。">
+<meta name="description" content="汇总各地公开的邮筒（箱）分布信息，按省 → 市 → 县逐级展开检索，每条记录附来源链接；数据来源线索整理自中国邮政邮筒（箱）数据信息目录列表。">
 <style>
   :root{
     --green:#0f7a4d; --green-d:#0a5c39; --green-l:#e8f5ee;
@@ -47,7 +47,8 @@
   .filters{display:flex;flex-wrap:wrap;gap:8px;align-items:flex-end}
   .field{display:flex;flex-direction:column;gap:3px;min-width:0}
   .cbwrap{position:relative;width:100%}
-  .field.combo{min-width:158px}
+  .field.combo{width:148px;min-width:0;flex:0 0 auto}
+  .field.combo .cb-in{text-overflow:ellipsis}
   .cb-in{width:100%;box-sizing:border-box;padding:7px 26px 7px 10px;border:1px solid var(--line);
          border-radius:9px;background:#fff;font-size:14px;height:38px;color:var(--ink);cursor:pointer;
          font-family:inherit;transition:border-color .15s,box-shadow .15s}
@@ -77,8 +78,10 @@
     background-size:5px 5px,5px 5px;background-repeat:no-repeat;padding-right:30px}
   select:focus,input:focus{outline:none;border-color:var(--green);box-shadow:0 0 0 3px rgba(15,122,77,.14)}
   select:disabled{background-color:#f2f5f3;color:var(--ink-3)}
-  .field.search{flex:1 1 220px;min-width:180px}
+  .field.search{flex:1 1 200px;min-width:150px}
   .field.search input{width:100%}
+  .filters > .field:not(.combo):not(.search){width:158px;flex:0 0 auto}
+  .filters > .field:not(.combo):not(.search) select{width:100%}
   .btn{
     border:1px solid var(--line);background:#fff;color:var(--ink-2);border-radius:9px;
     padding:8px 13px;font-size:13px;cursor:pointer;height:38px;font-family:inherit;
@@ -169,6 +172,9 @@
     background:#16211b;color:#fff;padding:9px 16px;border-radius:9px;font-size:13px;transition:.2s;z-index:99;
   }
   .toast.on{opacity:1;transform:translate(-50%,0)}
+  .copy{text-align:center;font-size:12px;color:var(--ink-3);margin:26px 0 8px;line-height:1.7}
+  .copy a{color:var(--ink-3);text-decoration:underline;text-underline-offset:2px}
+  .copy a:hover{color:var(--green)}
 
   @media (max-width:900px){
     .hero h1{font-size:21px}
@@ -187,7 +193,7 @@
 <header class="hero">
   <div class="wrap">
     <h1>全国邮政邮筒（箱）点位数据</h1>
-    <p class="sub">汇总各省级、地市级<b>邮政管理局</b>与<b>邮政分公司</b>主动公开的邮筒（箱）分布信息，按「省 → 市 → 县」逐级下拉展开；每条记录都能回到原始公示。数据来源线索整理自 <a href="https://zh.postal.wiki/" target="_blank" rel="noopener" style="color:#bfe9d4">邮政维基</a> 的《中国邮政邮筒（箱）数据信息目录列表》。</p>
+    <p class="sub">汇总各地公开的邮筒（箱）分布信息，按「省 → 市 → 县」逐级下拉展开，每条记录都有对应来源链接，数据来源线索整理自 <a href="https://zh.postal.wiki/wiki/中国邮政邮筒（箱）数据信息目录列表" target="_blank" rel="noopener" style="color:#bfe9d4">中国邮政邮筒（箱）数据信息目录列表</a>。</p>
     <div class="stats" id="stats"></div>
   </div>
 </header>
@@ -234,7 +240,6 @@
           <input id="cb-region-in" class="cb-in" type="text" readonly autocomplete="off" placeholder="全部区域">
           <b class="cb-ar">▾</b>
           <div class="cb-pop" hidden>
-            <input class="cb-q" type="text" placeholder="输入筛选…" autocomplete="off">
             <div class="cb-list"></div>
           </div>
         </div>
@@ -329,6 +334,10 @@
       <li>筒箱点位随市政建设、道路改造调整，<b>以公示原文与现场标识为准</b>；本页反映的是各文件发布时的状态。</li>
       <li>「开取频率 / 时间」为文件记载的开箱频次，遇节假日可能调整。</li>
     </ul>
+    <p class="copy">
+      Copyright © 2026 <a href="https://maps.postal.wiki/" target="_blank" rel="noopener">Postal Wiki Map</a>
+      · 本作品采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh-Hans" target="_blank" rel="noopener">CC BY-NC-SA 4.0 国际许可协议</a> 进行许可
+    </p>
   </div>
 </footer>
 
@@ -382,6 +391,8 @@
     var root = el(id), inp = root.querySelector('.cb-in'), pop = root.querySelector('.cb-pop'),
         q = root.querySelector('.cb-q'), list = root.querySelector('.cb-list'),
         arrow = root.querySelector('.cb-ar');
+    // 区域下拉不带搜索框（选项就四五项），没有 .cb-q 时用个空壳占位
+    if(!q) q = { value: '', focus: function(){}, addEventListener: function(){} };
     var items = [], sel = '', opened = false;
     function labelOf(v){
       for(var i = 0; i < items.length; i++) if(items[i].v === v) return items[i].label;
