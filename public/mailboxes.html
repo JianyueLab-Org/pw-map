@@ -264,9 +264,9 @@
         </div>
       </div>
       <div class="field combo" id="cb-kind">
-        <label for="cb-kind-in">式样</label>
+        <label for="cb-kind-in">形态</label>
         <div class="cbwrap">
-          <input id="cb-kind-in" class="cb-in" type="text" readonly autocomplete="off" placeholder="全部（式样）">
+          <input id="cb-kind-in" class="cb-in" type="text" readonly autocomplete="off" placeholder="全部（形态）">
           <b class="cb-ar">▾</b>
           <div class="cb-pop" hidden>
             <div class="cb-list"></div>
@@ -274,9 +274,9 @@
         </div>
       </div>
       <div class="field combo" id="cb-form">
-        <label for="cb-form-in">形态</label>
+        <label for="cb-form-in">式样</label>
         <div class="cbwrap">
-          <input id="cb-form-in" class="cb-in" type="text" readonly autocomplete="off" placeholder="全部（形态）">
+          <input id="cb-form-in" class="cb-in" type="text" readonly autocomplete="off" placeholder="全部（式样）">
           <b class="cb-ar">▾</b>
           <div class="cb-pop" hidden>
             <div class="cb-list"></div>
@@ -338,7 +338,7 @@
     <ul>
       <li><b>名称一列为什么有的是空的？</b> 有的公示只给"所属网点"或"开取机构名称"，有的干脆只给地址（沈阳、哈尔滨、佛山等离点式清单）。没有名称就留空，用类型＋地址定位，<b>不做臆造</b>。</li>
       <li><b>责任机构为什么大面积为空？</b> 只有源文件写明维护单位的才填（如河北沧州的揽投部、新疆喀什的分公司）。对云南各地市的表，"所属网点"本身就是该筒箱的维护网点，其名称已经体现在"名称"列，不重复占两栏。</li>
-      <li><b>类型与式样</b>：「门前」= 设在邮政营业场所门前（普遍服务标配）；「离点式」= 远离营业场所独立设置的"野生邮筒"。「式样」是子类：立式 / 悬挂式（其下再细分邮筒、邮箱时，类型列写成「邮筒·立式」这样的组合）。新疆喀什的表只分邮筒 / 邮箱、不区分门前与离点式，原样保留。</li>
+      <li><b>类型 / 形态 / 式样</b>：三个并列维度。「类型」按设置位置分：「门前」= 设在邮政营业场所门前（普遍服务标配），「离点式」= 远离营业场所独立设置的“野生邮筒”；「形态」按器物分：邮筒 / 邮箱；「式样」按安装方式分：立式 / 悬挂式。原文没写到的维度留空——多数表只标了类型，所以形态、式样在大部分城市是空的，不是缺数据。</li>
       <li><b>区域</b>：源文件标注了设置区域（城市 / 乡镇驻地 / 行政村 / 农村 / 景区）的才填，统一写成城区 / 乡镇 / 乡村 / 景区；未标注的留空。</li>
       <li><b>邮编</b>写在地址后面，不单占一列。</li>
       <li><b>坐标</b>只在新疆喀什的 XLSX 附件里有，页面上不展示；结构化 JSON 里保留了经纬度，供导入地图时使用。</li>
