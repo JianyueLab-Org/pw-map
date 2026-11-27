@@ -608,9 +608,11 @@
       })
       .then(function(idx){
         var parts = idx.parts || [];
-        var ver = encodeURIComponent(idx.generatedAt || String(idx.count || '1'));
+        var fallback = encodeURIComponent(idx.generatedAt || String(idx.count || '1'));
         return Promise.all(parts.map(function(p){
-          return fetch('data/' + p.file + '?v=' + ver)
+          // 每个分片带自己的内容摘要做版本号：同一天内改数据也能立刻失效
+          var v = p.ver ? encodeURIComponent(p.ver) : fallback;
+          return fetch('data/' + p.file + '?v=' + v)
             .then(function(r){
               if (!r.ok) throw new Error(p.file + ' HTTP ' + r.status);
               return r.json();
