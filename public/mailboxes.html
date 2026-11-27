@@ -119,6 +119,8 @@
   tr.grp .src{font-size:11px;color:var(--ink-3);margin-left:auto}
 
   .morebar{display:flex;justify-content:center;padding:16px;border-top:1px solid var(--line-2)}
+  /* display:flex 会盖掉浏览器对 [hidden] 的 display:none，必须显式补一条 */
+  .morebar[hidden]{display:none}
   .empty{padding:48px 20px;text-align:center;color:var(--ink-3)}
   .empty b{display:block;font-size:15px;color:var(--ink-2);margin-bottom:4px}
 
@@ -272,10 +274,11 @@
     return [r.province || '', r.city || '', r.county || '', r.area || '',
             r.name || '', r.type || '', r.org || '', r.address || '',
             r.schedule || '', r.note || '', r.source || '',
-            r.lon == null ? '' : String(r.lon), r.lat == null ? '' : String(r.lat)];
+            r.lon == null ? '' : String(r.lon), r.lat == null ? '' : String(r.lat),
+            r.coordSuspect ? 1 : 0];
   });
   var SRC = PAYLOAD.sources || {}, PEND = PAYLOAD.pending || [];
-  var F = {prov:0,city:1,county:2,region:3,name:4,type:5,org:6,addr:7,sched:8,note:9,src:10,lon:11,lat:12};
+  var F = {prov:0,city:1,county:2,region:3,name:4,type:5,org:6,addr:7,sched:8,note:9,src:10,lon:11,lat:12,suspect:13};
 
   function baseOf(t){ var i = (t||'').indexOf('·'); return i < 0 ? (t||'') : t.slice(0, i); }
   function subOf(t){ var i = (t||'').indexOf('·'); return i < 0 ? '' : t.slice(i+1); }
@@ -367,7 +370,8 @@
     return '<a href="'+esc(s.url)+'" target="_blank" rel="noopener" title="'+esc(s.org+'《'+s.title+'》'+s.date+'（'+s.fmt+'）')+'">'+esc(s.label)+'</a>';
   }
   function mapLink(r){
-    if(r[F.lon] && r[F.lat]){
+    // 有坐标且经查可信 → 直接按坐标定位；否则退回按地址检索（坐标存疑的不给坐标链接）
+    if(r[F.lon] && r[F.lat] && !r[F.suspect]){
       return '<a class="maplink" target="_blank" rel="noopener" href="https://uri.amap.com/marker?position='+encodeURIComponent(r[F.lon]).replace(/%2C/g,',')+','+encodeURIComponent(r[F.lat])+'&name='+encodeURIComponent(r[F.name]||'邮筒')+'">地图</a>';
     }
     return '<a class="maplink" target="_blank" rel="noopener" href="https://ditu.amap.com/search?query='+encodeURIComponent(r[F.addr])+'">地图</a>';
@@ -595,15 +599,18 @@
     catch (e) { fail('内联数据解析失败：' + e.message, ''); }
   } else {
     // 数据按省拆成多个小文件：先取索引，再并行取各省分片
-    fetch('data/index.json', { cache: 'no-store' })
+    // 缓存策略：索引用 no-cache 走协商缓存（一般 304）；分片走浏览器默认缓存，
+    // 并用 ?v=<generatedAt> 做版本失效——否则每次访问都要重拉约 2.8 MB。
+    fetch('data/index.json', { cache: 'no-cache' })
       .then(function(r){
         if (!r.ok) throw new Error('index.json HTTP ' + r.status);
         return r.json();
       })
       .then(function(idx){
         var parts = idx.parts || [];
+        var ver = encodeURIComponent(idx.generatedAt || String(idx.count || '1'));
         return Promise.all(parts.map(function(p){
-          return fetch('data/' + p.file, { cache: 'no-store' })
+          return fetch('data/' + p.file + '?v=' + ver)
             .then(function(r){
               if (!r.ok) throw new Error(p.file + ' HTTP ' + r.status);
               return r.json();
