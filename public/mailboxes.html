@@ -46,6 +46,25 @@
     backdrop-filter:blur(8px);border-bottom:1px solid var(--line);padding:10px 0}
   .filters{display:flex;flex-wrap:wrap;gap:8px;align-items:flex-end}
   .field{display:flex;flex-direction:column;gap:3px;min-width:0}
+  .cbwrap{position:relative;width:100%}
+  .field.combo{min-width:158px}
+  .cb-in{width:100%;box-sizing:border-box;padding:7px 26px 7px 10px;border:1px solid var(--line);
+         border-radius:9px;background:#fff;font-size:14px;height:38px;color:var(--ink);cursor:pointer;
+         font-family:inherit;transition:border-color .15s,box-shadow .15s}
+  .cb-in:focus{outline:none;border-color:var(--green);box-shadow:0 0 0 3px rgba(15,122,77,.14)}
+  .field.combo[disabled] .cb-in{background-color:#f2f5f3;color:var(--ink-3);cursor:not-allowed}
+  .cb-ar{position:absolute;right:11px;top:50%;transform:translateY(-50%);color:var(--ink-3);font-size:10px;pointer-events:none}
+  .cb-pop{position:absolute;z-index:90;left:0;right:0;top:calc(100% + 4px);background:#fff;
+          border:1px solid var(--line);border-radius:10px;box-shadow:0 10px 26px rgba(12,40,30,.14);padding:6px}
+  .cb-q{width:100%;box-sizing:border-box;padding:6px 8px;border:1px solid var(--line);border-radius:6px;
+        font-size:12.5px;margin-bottom:5px;font-family:inherit}
+  .cb-list{max-height:264px;overflow:auto}
+  .cb-item{display:flex;justify-content:space-between;gap:8px;padding:6px 8px;border-radius:6px;
+           cursor:pointer;font-size:13px;color:var(--ink-2)}
+  .cb-item:hover{background:#f1f7f3}
+  .cb-item.sel{background:#e7f4ec;color:#0b6b43;font-weight:500}
+  .cb-item i{font-style:normal;color:var(--ink-3);font-size:11.5px}
+  .cb-empty{padding:8px;color:var(--ink-3);font-size:12.5px}
 .field[hidden]{display:none}   /* display:flex 会盖掉 UA 的 [hidden] */
   .field > label{font-size:11px;color:var(--ink-3);padding-left:2px}
   select,input[type=search]{
@@ -176,12 +195,52 @@
 <div class="toolbar">
   <div class="wrap">
     <div class="filters">
-      <div class="field"><label for="f-prov">省级行政区划</label><select id="f-prov"></select></div>
-      <div class="field"><label for="f-city">地级行政区划</label><select id="f-city" disabled></select></div>
-      <div class="field"><label for="f-county">县级行政区划</label><select id="f-county" disabled></select></div>
+      <div class="field combo" id="cb-prov">
+        <label for="cb-prov-in">省级行政区划</label>
+        <div class="cbwrap">
+          <input id="cb-prov-in" class="cb-in" type="text" readonly autocomplete="off" placeholder="全部省份">
+          <b class="cb-ar">▾</b>
+          <div class="cb-pop" hidden>
+            <input class="cb-q" type="text" placeholder="输入筛选…" autocomplete="off">
+            <div class="cb-list"></div>
+          </div>
+        </div>
+      </div>
+      <div class="field combo" id="cb-city">
+        <label for="cb-city-in">地级行政区划</label>
+        <div class="cbwrap">
+          <input id="cb-city-in" class="cb-in" type="text" readonly autocomplete="off" placeholder="全部地市">
+          <b class="cb-ar">▾</b>
+          <div class="cb-pop" hidden>
+            <input class="cb-q" type="text" placeholder="输入筛选…" autocomplete="off">
+            <div class="cb-list"></div>
+          </div>
+        </div>
+      </div>
+      <div class="field combo" id="cb-county">
+        <label for="cb-county-in">县级行政区划</label>
+        <div class="cbwrap">
+          <input id="cb-county-in" class="cb-in" type="text" readonly autocomplete="off" placeholder="全部区县">
+          <b class="cb-ar">▾</b>
+          <div class="cb-pop" hidden>
+            <input class="cb-q" type="text" placeholder="输入筛选…" autocomplete="off">
+            <div class="cb-list"></div>
+          </div>
+        </div>
+      </div>
+      <div class="field combo" id="cb-region" hidden>
+        <label for="cb-region-in">区域</label>
+        <div class="cbwrap">
+          <input id="cb-region-in" class="cb-in" type="text" readonly autocomplete="off" placeholder="全部区域">
+          <b class="cb-ar">▾</b>
+          <div class="cb-pop" hidden>
+            <input class="cb-q" type="text" placeholder="输入筛选…" autocomplete="off">
+            <div class="cb-list"></div>
+          </div>
+        </div>
+      </div>
       <div class="field"><label for="f-type">类型</label><select id="f-type"></select></div>
       <div class="field"><label for="f-sub">式样</label><select id="f-sub"></select></div>
-      <div class="field" id="wrap-region" hidden><label for="f-region">区域</label><select id="f-region"></select></div>
       <div class="field search"><label for="f-q">搜索</label><input id="f-q" type="search" placeholder="网点名称 / 地址 / 责任机构" autocomplete="off"></div>
       <button class="btn" id="btn-reset">重置</button>
     </div>
@@ -209,7 +268,6 @@
               <th>地级行政区划</th>
               <th>县级行政区划</th>
               <th>邮筒（箱）名称</th>
-              <th>区域</th>
               <th>类型</th>
               <th>责任机构</th>
               <th>地址</th>
@@ -260,7 +318,10 @@
     </details>
 
     <h2>来源清单</h2>
-    <table class="srctable" id="srctable"></table>
+    <details>
+      <summary>展开（<span id="src-count">0</span> 份）</summary>
+      <table class="srctable" id="srctable"></table>
+    </details>
 
     <h2>使用与免责</h2>
     <ul>
@@ -315,39 +376,133 @@
     return '<option value="'+esc(v)+'"'+(v===sel?' selected':'')+'>'+esc(label)+(count!=null?'（'+count+'）':'')+'</option>';
   }
 
-  // ---------- selects ----------
+  // ---------- 可搜索下拉（省 / 市 / 县 / 区域） ----------
+  var COMBO = {};
+  function mkCombo(id, onPick){
+    var root = el(id), inp = root.querySelector('.cb-in'), pop = root.querySelector('.cb-pop'),
+        q = root.querySelector('.cb-q'), list = root.querySelector('.cb-list'),
+        arrow = root.querySelector('.cb-ar');
+    var items = [], sel = '', opened = false;
+    function labelOf(v){
+      for(var i = 0; i < items.length; i++) if(items[i].v === v) return items[i].label;
+      return '';
+    }
+    function paint(){
+      var kw = (q.value || '').trim().toLowerCase(), html = '';
+      items.forEach(function(it, i){
+        if(kw && (it.label + ' ' + it.v).toLowerCase().indexOf(kw) < 0) return;
+        html += '<div class="cb-item' + (it.v === sel ? ' sel' : '') + '" data-i="' + i + '">' +
+                '<span>' + esc(it.label) + '</span>' +
+                (it.count != null ? '<i>' + it.count + '</i>' : '') + '</div>';
+      });
+      list.innerHTML = html || '<div class="cb-empty">没有匹配项</div>';
+    }
+    function openPop(){
+      if(root.hasAttribute('disabled')) return;
+      opened = true; pop.hidden = false; q.value = ''; paint(); q.focus();
+    }
+    function closePop(){ opened = false; pop.hidden = true; inp.value = labelOf(sel); }
+    inp.addEventListener('click', function(e){ e.stopPropagation(); if(opened) closePop(); else openPop(); });
+    arrow.addEventListener('click', function(e){ e.stopPropagation(); if(opened) closePop(); else openPop(); });
+    q.addEventListener('input', paint);
+    q.addEventListener('keydown', function(e){ if(e.key === 'Escape') closePop(); });
+    list.addEventListener('click', function(e){
+      var t = e.target.closest('.cb-item');
+      if(!t) return;
+      var it = items[+t.getAttribute('data-i')];
+      sel = it.v; closePop(); onPick(it);
+    });
+    document.addEventListener('click', function(e){ if(opened && !root.contains(e.target)) closePop(); });
+    return {
+      set: function(arr, cur, disabled){
+        items = arr; sel = cur || '';
+        if(disabled){
+          root.setAttribute('disabled', '');
+          inp.value = ''; inp.placeholder = '无可选项';
+        }else{
+          root.removeAttribute('disabled');
+          inp.value = labelOf(sel);
+        }
+        if(opened) paint();
+      }
+    };
+  }
+  function cityOf(r){ return r[F.city] || '（市级未标注）'; }
+  function countyOf(r){ return r[F.county] || '（县级未标注）'; }
+
   function fillProv(){
-    var c = {}; ROWS.forEach(function(r){ c[r[F.prov]] = (c[r[F.prov]]||0)+1; });
-    el('f-prov').innerHTML = opt('', '全部省份', ROWS.length, state.prov) +
-      provOrder.map(function(p){ return opt(p, p, c[p], state.prov); }).join('');
+    var c = {}, n = 0;
+    ROWS.forEach(function(r){ var k = r[F.prov]; if(!k) return; c[k] = (c[k]||0)+1; n++; });
+    var items = [{v:'', label:'全部省份（' + n + '）', count:null}];
+    provOrder.forEach(function(p){ items.push({v:p, label:p, count:c[p]||0}); });
+    COMBO.prov.set(items, state.prov, false);
   }
   function fillCity(){
-    var sel = el('f-city'), c = {};
-    if(!state.prov){ sel.innerHTML = '<option value="">全部地市</option>'; sel.disabled = true; return; }
-    ROWS.forEach(function(r){ if(r[F.prov]===state.prov){ var k = r[F.city]||'（市级未标注）'; c[k]=(c[k]||0)+1; } });
-    var keys = Object.keys(c), sum = keys.reduce(function(a,k){ return a+c[k]; },0);
-    sel.disabled = false;
-    if(keys.length === 1){          // 直辖市：地级只有一个，不给「全部地市」，直接显示它
-      state.city = keys[0];
-      sel.innerHTML = opt(keys[0], keys[0], c[keys[0]], keys[0]);
+    var base = ROWS.filter(function(r){ return !state.prov || r[F.prov] === state.prov; });
+    var c = {}, order = [];
+    base.forEach(function(r){
+      var k = cityOf(r);
+      if(!c[k]){ c[k] = 0; order.push(k); }
+      c[k]++;
+    });
+    var n = base.length, items = [{v:'', label:'全部地市（' + n + '）', count:null}];
+    order.forEach(function(k){
+      var r0 = null;
+      for(var i = 0; i < base.length; i++) if(cityOf(base[i]) === k){ r0 = base[i]; break; }
+      items.push({v:k, label:k, count:c[k], prov:r0 ? r0[F.prov] : ''});
+    });
+    if(order.length === 1){            // 直辖市：地级只有一个，直接选定，不留「全部地市」
+      state.city = order[0];
+      COMBO.city.set([items[1]], state.city, false);
       return;
     }
-    sel.innerHTML = opt('', '全部地市', sum, state.city) +
-      keys.map(function(k){ return opt(k, k, c[k], state.city); }).join('');
+    COMBO.city.set(items, state.city, false);
   }
   function fillCounty(){
-    var sel = el('f-county'), c = {};
-    if(!state.prov || !state.city){ sel.innerHTML = '<option value="">全部区县</option>'; sel.disabled = true; return; }
-    ROWS.forEach(function(r){
-      if(r[F.prov]===state.prov && (r[F.city]||'（市级未标注）')===state.city){
-        var n = r[F.county]||'（县级未标注）'; c[n]=(c[n]||0)+1; }
+    var base = ROWS.filter(function(r){
+      if(state.prov && r[F.prov] !== state.prov) return false;
+      if(state.city && cityOf(r) !== state.city) return false;
+      return true;
     });
-    var keys = Object.keys(c), sum = keys.reduce(function(a,k){ return a+c[k]; },0);
-    sel.disabled = false;
-    sel.innerHTML = opt('', '全部区县', sum, state.county) +
-      keys.map(function(k){ return opt(k, k, c[k], state.county); }).join('');
+    var c = {}, order = [];
+    base.forEach(function(r){
+      var k = countyOf(r);
+      if(!c[k]){ c[k] = 0; order.push(k); }
+      c[k]++;
+    });
+    var items = [{v:'', label:'全部区县（' + base.length + '）', count:null}];
+    order.forEach(function(k){
+      var r0 = null;
+      for(var i = 0; i < base.length; i++) if(countyOf(base[i]) === k){ r0 = base[i]; break; }
+      var lab = state.city ? k : (cityOf(r0) + ' · ' + k);   // 没选城市时带上城市名，避免重名
+      items.push({v:k, label:lab, count:c[k], prov:r0 ? r0[F.prov] : '', city:r0 ? cityOf(r0) : ''});
+    });
+    COMBO.county.set(items, state.county, items.length <= 1);
   }
-  // 类型 / 式样 的条数要跟着省·市·县·搜索词一起变：算的时候忽略自己那一维
+  // 区域：只有当前区划范围内确实有区域数据时才出现
+  function fillRegion(){
+    var c = {}, n = 0;
+    ROWS.forEach(function(r){
+      if(state.prov && r[F.prov] !== state.prov) return;
+      if(state.city && cityOf(r) !== state.city) return;
+      if(state.county && countyOf(r) !== state.county) return;
+      if(!qMatch(r)) return;
+      var g = r[F.region];
+      if(!g) return;
+      c[g] = (c[g]||0)+1; n++;
+    });
+    var keys = Object.keys(c).sort(), root = el('cb-region');
+    if(!keys.length){
+      root.hidden = true; state.region = '';
+      COMBO.region.set([], '', true);
+      return;
+    }
+    root.hidden = false;
+    var items = [{v:'', label:'全部区域（' + n + '）', count:null}];
+    keys.forEach(function(k){ items.push({v:k, label:k, count:c[k]}); });
+    COMBO.region.set(items, state.region, keys.length <= 1);
+  }
+  // 类型 / 式样：条数跟着省·市·县·区域·搜索词变；只剩一个选项时直接置灰
   function qMatch(r){
     if(!state.q) return true;
     var hay = (r[F.name]+' '+r[F.addr]+' '+r[F.org]+' '+r[F.prov]+' '+r[F.city]+' '+r[F.county]+' '+r[F.note]+' '+r[F.type]).toLowerCase();
@@ -359,8 +514,8 @@
     var out = {base:{}, sub:{}, n:0};
     ROWS.forEach(function(r){
       if(state.prov && r[F.prov]!==state.prov) return;
-      if(state.city && (r[F.city]||'（市级未标注）')!==state.city) return;
-      if(state.county && (r[F.county]||'（县级未标注）')!==state.county) return;
+      if(state.city && cityOf(r)!==state.city) return;
+      if(state.county && countyOf(r)!==state.county) return;
       if(!ignoreType && state.type && baseOf(r[F.type])!==state.type) return;
       if(!ignoreSub && state.sub && subOf(r[F.type])!==state.sub) return;
       if(state.region && r[F.region]!==state.region) return;
@@ -372,40 +527,40 @@
     return out;
   }
   function fillType(){
-    var f = facet(true, false), keys = Object.keys(f.base).sort();
-    el('f-type').innerHTML = opt('', '全部类型', f.n, state.type) +
+    var f = facet(true, false), keys = Object.keys(f.base).sort(), sel = el('f-type');
+    sel.innerHTML = opt('', '全部类型（' + f.n + '）', null, state.type) +
       keys.map(function(k){ return opt(k, k, f.base[k], state.type); }).join('');
+    sel.disabled = keys.length <= 1;      // 只剩一种就没得选，置灰
   }
   function fillSub(){
-    var f = facet(false, true), keys = Object.keys(f.sub).sort();
-    el('f-sub').innerHTML = opt('', '全部式样', f.n, state.sub) +
+    var f = facet(false, true), keys = Object.keys(f.sub).sort(), sel = el('f-sub');
+    sel.innerHTML = opt('', '全部式样（' + f.n + '）', null, state.sub) +
       keys.map(function(k){ return opt(k, k, f.sub[k], state.sub); }).join('');
+    sel.disabled = keys.length <= 1;
   }
   function fillTypes(){ fillType(); fillSub(); }
-  // 区域：只有当前行政区划范围内确实有区域数据时才出现
-  function fillRegion(){
-    var c = {}, n = 0;
-    ROWS.forEach(function(r){
-      if(state.prov && r[F.prov]!==state.prov) return;
-      if(state.city && (r[F.city]||'（市级未标注）')!==state.city) return;
-      if(state.county && (r[F.county]||'（县级未标注）')!==state.county) return;
-      if(!qMatch(r)) return;
-      var g = r[F.region];
-      if(!g) return;
-      c[g] = (c[g]||0)+1; n++;
-    });
-    var keys = Object.keys(c).sort(), wrap = el('wrap-region'), sel = el('f-region');
-    if(!keys.length){                      // 这段区划里没有区域字段 → 整个下拉收起来
-      wrap.hidden = true;
-      state.region = '';
-      sel.innerHTML = '';
-      return;
-    }
-    wrap.hidden = false;
-    sel.innerHTML = opt('', '全部区域', n, state.region) +
-      keys.map(function(k){ return opt(k, k, c[k], state.region); }).join('');
+  function refreshAll(){
+    fillProv(); fillCity(); fillCounty(); fillRegion(); fillTypes(); syncUrl(); render();
   }
-
+  function initCombos(){
+    COMBO.prov = mkCombo('cb-prov', function(it){
+      state.prov = it.v; state.city = ''; state.county = ''; state.region = ''; refreshAll();
+    });
+    COMBO.city = mkCombo('cb-city', function(it){
+      state.city = it.v; state.county = ''; state.region = '';
+      if(it.prov) state.prov = it.prov;      // 没选省也能直接选市，省自动补上
+      refreshAll();
+    });
+    COMBO.county = mkCombo('cb-county', function(it){
+      state.county = it.v; state.region = '';
+      if(it.prov) state.prov = it.prov;      // 同理，县也能直接选
+      if(it.city) state.city = it.city;
+      refreshAll();
+    });
+    COMBO.region = mkCombo('cb-region', function(it){
+      state.region = it.v; refreshAll();
+    });
+  }
   // ---------- filter ----------
   function match(r){
     if(state.prov && r[F.prov]!==state.prov) return false;
@@ -501,8 +656,8 @@
       '<td>'+esc(r[F.prov])+'</td>'+
       '<td>'+esc(r[F.city])+'</td>'+
       '<td>'+esc(r[F.county])+'</td>'+
-      '<td>'+(r[F.name]?esc(r[F.name]):'<span class="muted">—</span>')+'</td>'+
-      '<td>'+(r[F.region]?'<span class="rg">'+esc(r[F.region])+'</span>':'')+'</td>'+
+      '<td>'+(r[F.name]?esc(r[F.name]):'<span class="muted">—</span>')+
+        (r[F.region]?'<span class="rg">'+esc(r[F.region])+'</span>':'')+'</td>'+
       '<td>'+typeCell(r[F.type])+'</td>'+
       '<td>'+(r[F.org]?esc(r[F.org]):'<span class="muted">—</span>')+'</td>'+
       '<td class="addr">'+esc(r[F.addr])+mapLink(r)+'</td>'+
@@ -513,7 +668,7 @@
   }
   function grpRow(lv, key, label, count, open){
     return '<tr class="grp lv'+lv+(open?' open':'')+'" data-key="'+esc(key)+'">'+
-      '<td colspan="12"><button type="button" aria-expanded="'+(open?'true':'false')+'">'+
+      '<td colspan="11"><button type="button" aria-expanded="'+(open?'true':'false')+'">'+
         '<span class="caret">▶</span><span class="gn" style="padding-left:'+((lv-1)*14)+'px">'+esc(label)+'</span>'+
         '<span class="cnt">'+count+'</span>'+
       '</button></td></tr>';
@@ -585,23 +740,8 @@
     if(state.expanded[key]) delete state.expanded[key]; else state.expanded[key] = 1;
     render();
   });
-  el('f-prov').addEventListener('change', function(){
-    state.prov = this.value; state.city = ''; state.county = '';
-    fillCity(); fillCounty(); fillTypes(); fillRegion(); syncUrl(); render();
-  });
-  el('f-city').addEventListener('change', function(){
-    state.city = this.value; state.county = '';
-    if(state.city) state.expanded['P|'+state.prov] = 1;
-    fillCounty(); fillTypes(); fillRegion(); syncUrl(); render();
-  });
-  el('f-county').addEventListener('change', function(){
-    state.county = this.value;
-    if(state.county){ state.expanded['P|'+state.prov]=1; state.expanded['C|'+state.prov+'|'+state.city]=1; }
-    fillTypes(); fillRegion(); syncUrl(); render();
-  });
   el('f-type').addEventListener('change', function(){ state.type = this.value; fillTypes(); syncUrl(); render(); });
   el('f-sub').addEventListener('change', function(){ state.sub = this.value; fillTypes(); syncUrl(); render(); });
-  el('f-region').addEventListener('change', function(){ state.region = this.value; fillTypes(); syncUrl(); render(); });
   var qt;
   el('f-q').addEventListener('input', function(){
     var v = this.value.trim();
@@ -609,24 +749,8 @@
   });
   el('btn-reset').addEventListener('click', function(){
     state = {prov:'', city:'', county:'', type:'', sub:'', region:'', q:'', expanded:{}};
-    el('f-q').value = ''; fillProv(); fillCity(); fillCounty(); fillTypes(); fillRegion(); syncUrl(); render();
+    el('f-q').value = ''; refreshAll();
   });
-  el('btn-expand').addEventListener('click', function(){
-    provOrder.forEach(function(p){
-      state.expanded['P|'+p] = 1;
-      Object.keys(tree[p]).forEach(function(c){
-        state.expanded['C|'+p+'|'+c] = 1;
-        Object.keys(tree[p][c]).forEach(function(n){ state.expanded['N|'+p+'|'+c+'|'+n] = 1; });
-      });
-    });
-    shown = 100000; render();
-  });
-  el('btn-collapse').addEventListener('click', function(){
-    state.expanded = {}; shown = PAGE; render();
-    el('scroll').scrollTop = 0;
-  });
-  el('btn-more').addEventListener('click', function(){ shown += PAGE; render(); });
-
   // ---------- url ----------
   function syncUrl(){
     var u = new URL(location.href), q = u.searchParams;
@@ -658,7 +782,7 @@
 
   // ---------- init ----------
   readUrl();
-  fillProv(); fillCity(); fillCounty(); fillTypes(); fillRegion();
+  initCombos(); refreshAll();
 
   var cityCount = 0, countySet = {}, usedSrc = {};
   Object.keys(tree).forEach(function(p){ cityCount += Object.keys(tree[p]).length; });
@@ -680,6 +804,7 @@
     st.push('<tr><td>'+esc(s.label)+'</td><td>'+esc(s.org)+'</td><td>'+esc(s.title)+'</td><td>'+esc(s.date)+'</td><td>'+esc(s.fmt)+'</td><td>'+(n||'—')+'</td><td><a href="'+esc(s.url)+'" target="_blank" rel="noopener">原页</a></td></tr>');
   });
   el('srctable').innerHTML = st.join('');
+  el('src-count').textContent = Object.keys(SRC).length;
 
   var pt = ['<tr><th>省级</th><th>地级</th><th>来源情况</th><th>链接</th></tr>'];
   PEND.forEach(function(x){
