@@ -322,12 +322,6 @@
       <table class="srctable" id="pendtable"></table>
     </details>
 
-    <h2>来源清单</h2>
-    <details>
-      <summary>展开（<span id="src-count">0</span> 份）</summary>
-      <table class="srctable" id="srctable"></table>
-    </details>
-
     <h2>使用与免责</h2>
     <ul>
       <li>数据版权归各发布机关；本页只做汇总与结构化，每条均标注原始出处链接。</li>
@@ -336,7 +330,7 @@
     </ul>
     <p class="copy">
       Copyright © 2026 <a href="https://maps.postal.wiki/" target="_blank" rel="noopener">Postal Wiki Map</a>
-      · 本作品采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh-Hans" target="_blank" rel="noopener">CC BY-NC-SA 4.0 国际许可协议</a> 进行许可
+      · 本站采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh-Hans" target="_blank" rel="noopener">CC BY-NC-SA 4.0 国际许可协议</a> 进行许可
     </p>
   </div>
 </footer>
@@ -809,13 +803,16 @@
     ['来源文件', Object.keys(usedSrc).length + ' 份']
   ].map(function(x){ return '<div class="stat"><b>'+x[1]+'</b><span>'+x[0]+'</span></div>'; }).join('');
 
-  var st = ['<tr><th>信息来源</th><th>发布机构</th><th>文件 / 页面</th><th>发布</th><th>载体</th><th>条数</th><th>链接</th></tr>'];
-  Object.keys(SRC).forEach(function(k){
-    var s = SRC[k], n = ROWS.filter(function(r){ return r[F.src]===k; }).length;
-    st.push('<tr><td>'+esc(s.label)+'</td><td>'+esc(s.org)+'</td><td>'+esc(s.title)+'</td><td>'+esc(s.date)+'</td><td>'+esc(s.fmt)+'</td><td>'+(n||'—')+'</td><td><a href="'+esc(s.url)+'" target="_blank" rel="noopener">原页</a></td></tr>');
-  });
-  el('srctable').innerHTML = st.join('');
-  el('src-count').textContent = Object.keys(SRC).length;
+  // 来源清单已下线（与 postal.wiki 目录列表重复），只在有该表格时渲染
+  if(el('srctable')){
+    var st = ['<tr><th>信息来源</th><th>发布机构</th><th>文件 / 页面</th><th>发布</th><th>载体</th><th>条数</th><th>链接</th></tr>'];
+    Object.keys(SRC).forEach(function(k){
+      var s = SRC[k], n = ROWS.filter(function(r){ return r[F.src]===k; }).length;
+      st.push('<tr><td>'+esc(s.label)+'</td><td>'+esc(s.org)+'</td><td>'+esc(s.title)+'</td><td>'+esc(s.date)+'</td><td>'+esc(s.fmt)+'</td><td>'+(n||'—')+'</td><td><a href="'+esc(s.url)+'" target="_blank" rel="noopener">原页</a></td></tr>');
+    });
+    el('srctable').innerHTML = st.join('');
+    if(el('src-count')) el('src-count').textContent = Object.keys(SRC).length;
+  }
 
   var pt = ['<tr><th>省级</th><th>地级</th><th>来源情况</th><th>链接</th></tr>'];
   PEND.forEach(function(x){
