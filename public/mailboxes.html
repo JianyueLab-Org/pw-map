@@ -99,6 +99,14 @@
   .tag.t-box{border-color:#d8dce8;background:#f3f5fb;color:#3d4a70}
   .sub{display:inline-block;font-size:11px;color:var(--ink-3);margin-left:3px}
   .rg{font-size:11.5px;color:var(--ink-2);border:1px dashed var(--line);border-radius:6px;padding:0 6px;white-space:nowrap}
+  .dows{display:inline-flex;gap:2px;margin-right:5px;vertical-align:middle}
+  .dow{display:inline-block;width:16px;height:16px;line-height:16px;text-align:center;font-size:10.5px;
+       border-radius:4px;border:1px solid var(--line);color:#b9c2c6;background:#fbfcfc}
+  .dow.on{border-color:#0b6b43;background:#0b6b43;color:#fff}
+  .chip{display:inline-block;font-size:11.5px;padding:1px 7px;border-radius:999px;
+        border:1px solid #c9e3d6;background:#eef8f2;color:#0b6b43;margin-right:4px;white-space:nowrap}
+  .tm{display:inline-block;font-size:11.5px;font-variant-numeric:tabular-nums;padding:1px 6px;margin-right:3px;
+      border-radius:4px;background:#f3f6f4;color:var(--ink-2);white-space:nowrap}
   .maplink{font-size:12px;color:var(--ink-3);white-space:nowrap;margin-left:6px}
   .maplink:hover{color:var(--green)}
 
@@ -277,10 +285,10 @@
             r.name || '', r.type || '', r.org || '', r.address || '',
             r.schedule || '', r.note || '', r.source || '',
             r.lon == null ? '' : String(r.lon), r.lat == null ? '' : String(r.lat),
-            r.coordSuspect ? 1 : 0];
+            r.coordSuspect ? 1 : 0, r.days || '', r.times || ''];
   });
   var SRC = PAYLOAD.sources || {}, PEND = PAYLOAD.pending || [];
-  var F = {prov:0,city:1,county:2,region:3,name:4,type:5,org:6,addr:7,sched:8,note:9,src:10,lon:11,lat:12,suspect:13};
+  var F = {prov:0,city:1,county:2,region:3,name:4,type:5,org:6,addr:7,sched:8,note:9,src:10,lon:11,lat:12,suspect:13,days:14,times:15};
 
   function baseOf(t){ var i = (t||'').indexOf('·'); return i < 0 ? (t||'') : t.slice(0, i); }
   function subOf(t){ var i = (t||'').indexOf('·'); return i < 0 ? '' : t.slice(i+1); }
@@ -429,6 +437,61 @@
     return '<a class="maplink" target="_blank" rel="noopener" href="https://ditu.amap.com/search?query='+encodeURIComponent(r[F.addr])+'">地图</a>';
   }
 
+  // ---------- 开取频次：周几打勾 + 时刻小标签 ----------
+  var CN_DAY = {'一':1,'二':2,'三':3,'四':4,'五':5,'六':6,'日':7,'天':7};
+  // 只认「周X至周Y」「周一、周三」这种明确写法；「每日」另行处理
+  function explicitDays(s){
+    if(!s) return null;
+    var m, set = null, i;
+    var re = /(?:周|星期)([一二三四五六日天])\s*(?:至|到|~|-)\s*(?:周|星期)?([一二三四五六日天])/g;
+    while((m = re.exec(s))){
+      var a = CN_DAY[m[1]], b = CN_DAY[m[2]];
+      if(a === undefined || b === undefined) continue;
+      if(a > b){ var t = a; a = b; b = t; }
+      set = set || {};
+      for(i = a; i <= b; i++) set[i] = 1;
+    }
+    if(set) return set;
+    var re2 = /(?:周|星期)([一二三四五六日天])/g, one = {}, any = false;
+    while((m = re2.exec(s))){ one[CN_DAY[m[1]]] = 1; any = true; }
+    return any ? one : null;
+  }
+  function allDays(){ var s = {}; for(var i = 1; i <= 7; i++) s[i] = 1; return s; }
+  function dowHtml(set){
+    return '<span class="dows">' + ['一','二','三','四','五','六','日'].map(function(c, i){
+      return '<span class="dow' + (set[i + 1] ? ' on' : '') + '">' + c + '</span>';
+    }).join('') + '</span>';
+  }
+  function timeList(s){
+    s = (s || '').replace(/：/g, ':').replace(/[，、;；]/g, ' ');
+    var out = [], seen = {}, m;
+    var re = /(\d{1,2}:\d{2}(?:\s*[-~至]\s*\d{1,2}:\d{2})?)/g;
+    while((m = re.exec(s))){
+      var v = m[1].replace(/\s+/g, '');
+      if(!seen[v]){ seen[v] = 1; out.push(v); }
+    }
+    return out;
+  }
+  function schedCell(days, times){
+    days = days || ''; times = times || '';
+    var chips = [], set = explicitDays(days) || explicitDays(times);
+    var tl = timeList(times), every = /每天|每日|天天/.test(days + times);
+    if(set){
+      chips.push(dowHtml(set));                        // 原文写了周几 → 打勾
+    }else if(/^\d$/.test(days)){
+      if(days === '7'){ chips.push(dowHtml(allDays())); }   // 每周7天 = 天天开
+      else { chips.push('<span class="chip">每周' + days + '天</span>'); }  // 只写天数，说不出是哪几天
+    }else if(every){
+      chips.push(dowHtml(allDays()));
+    }else if(days){
+      chips.push('<span class="chip">' + esc(days) + '</span>');
+    }else if(tl.length){
+      chips.push('<span class="chip">每天' + tl.length + '次</span>');  // 只给了时刻：按原文给的次数算
+    }
+    tl.forEach(function(t){ chips.push('<span class="tm">' + esc(t) + '</span>'); });
+    return chips.length ? chips.join('') : '';
+  }
+
   // ---------- render ----------
   var seq = 0;
   function leafRow(r){
@@ -443,7 +506,7 @@
       '<td>'+typeCell(r[F.type])+'</td>'+
       '<td>'+(r[F.org]?esc(r[F.org]):'<span class="muted">—</span>')+'</td>'+
       '<td class="addr">'+esc(r[F.addr])+mapLink(r)+'</td>'+
-      '<td class="sched">'+(r[F.sched]?esc(r[F.sched]):'')+'</td>'+
+      '<td class="sched">'+schedCell(r[F.days], r[F.times])+'</td>'+
       '<td class="note">'+(r[F.note]?esc(r[F.note]):'')+'</td>'+
       '<td class="src">'+srcCell(r[F.src])+'</td>'+
     '</tr>';
